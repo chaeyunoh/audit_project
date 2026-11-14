@@ -21,3 +21,7 @@ blueColor = "#2F7FE0"
 grayColor = "#5D6170"
 violetColor = "#5B4BC4"
 chartCategoricalColors = ["#2F7FE0", "#0B0B0C", "#A9CFF5", "#B45309", "#1F7A4D", "#5B4BC4", "#9A9AA0"]
+
+# 오른쪽 위 도구 막대: 개발자용 항목(Deploy·Rerun·Clear cache)을 숨긴다. 이 앱은 Streamlit Cloud에 배포하지 않는다.
+[client]
+toolbarMode = "viewer"
