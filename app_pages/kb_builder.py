@@ -1,6 +1,6 @@
 """산업 초안 만들기 — 상장사 3~5곳의 공시로 새 산업의 지식베이스 초안을 만든다.
 
-흐름: ① 자료 모으기(코드: 사업의 내용·KAM·재무) → ② 참고자료 확인(코드) → ③ 초안(AI 또는 KAM 뼈대) → ④ 검증 → ⑤ 초안 저장
+흐름: ① 자료 모으기(코드: 사업의 내용·재무) → ② 참고자료 확인(코드) → ③ 초안(AI 또는 뼈대) → ④ 검증 → ⑤ 초안 저장
 원칙: AI는 통제된 어휘 안에서 초안만 쓰고, 검증을 통과한 초안만 knowledge/drafts/에 '초안'으로 저장한다.
 화면 규칙: 움직이는 효과(스피너 등)를 쓰지 않는다 — 진행 상황은 정적인 문구로만 보여준다.
 """
@@ -16,7 +16,7 @@ from scanner import kb, kb_draft, ksic
 from scanner.analyze import AnalyzerError, make_analyzer
 from scanner.collect import CollectError, DartCollector
 
-st.caption("같은 산업의 상장사 3~5곳을 넣으면, 공시의 사업의 내용과 **핵심감사사항(KAM)**을 근거로 산업 지식베이스 초안을 만듭니다. "
+st.caption("같은 산업의 상장사 3~5곳을 넣으면, 공시의 사업의 내용과 재무제표를 근거로 산업 지식베이스 초안을 만듭니다. "
            "초안은 감사인이 검토하기 전까지 '초안 · 검토 필요'로 표시됩니다.")
 
 # ---------------- ① 입력 ----------------
@@ -60,23 +60,11 @@ if not sources:
 
 # ---------------- ② 참고자료 (코드) ----------------
 st.subheader("1. 모은 자료")
-st.dataframe(pd.DataFrame([{"회사": s.corp_name, "업종": ksic.label(s.induty_code), "감사인": s.auditor,
-                            "핵심감사사항": len(s.kams), "사업의 내용(자)": len(s.business),
+st.dataframe(pd.DataFrame([{"회사": s.corp_name, "업종": ksic.label(s.induty_code), "사업의 내용(자)": len(s.business),
                             "재무제표": "있음" if s.financials else "없음"} for s in sources]),
              hide_index=True, alt="초안에 쓰인 회사별 자료 현황")
 
-st.subheader("2. 핵심감사사항 — 감사인이 실제로 가장 유의적이라고 본 것")
-for s in sources:
-    for k in s.kams:
-        with st.expander(f"{s.corp_name} · {k.title}"):
-            st.caption(f"{s.auditor} · {k.year}")
-            if k.why:
-                st.markdown(f"**결정 이유** {k.why}")
-            for p in k.procedures:
-                st.markdown(f"- {p}")
-            if not k.why and not k.procedures:
-                st.caption("본문에서 이유·절차를 찾지 못해 제목만 있습니다.")
-
+st.subheader("2. 참고자료")
 c1, c2 = st.columns(2)
 with c1.container(border=True, height="stretch"):
     st.markdown("**산업 용어 후보** (2곳 이상에서 나온 용어)")
@@ -93,10 +81,9 @@ with c2.container(border=True, height="stretch"):
 
 # ---------------- ③ 초안 ----------------
 st.subheader("3. 초안")
-kams = [k for s in sources for k in s.kams]
 has_ai = bool(os.getenv("ANTHROPIC_API_KEY"))
 if not has_ai:
-    st.info("ANTHROPIC_API_KEY가 없어 AI 초안 대신 **KAM 기반 뼈대**를 만듭니다. TODO를 채운 뒤 지식베이스 파일에 직접 붙여 넣으세요.")
+    st.info("ANTHROPIC_API_KEY가 없어 AI 초안 대신 **뼈대**를 만듭니다. TODO를 채운 뒤 지식베이스 파일에 직접 붙여 넣으세요.")
     st.code(kb_draft.skeleton(state["key"], state["name"], state["prefix"], state["ksic"], sources, kw, prof),
             language="yaml")
     st.stop()
@@ -114,7 +101,7 @@ if not state.get("raw"):
     st.stop()
 
 block, notes = kb_draft.assemble(state["key"], state["name"], state["prefix"], state["ksic"], state["raw"],
-                                 prof, state["ids"], kams)
+                                 prof, state["ids"])
 for n in notes:
     st.warning(n, title="조립 중 조치")
 
