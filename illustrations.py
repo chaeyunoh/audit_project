@@ -171,8 +171,9 @@ def img(icon: str, size: int = 64, label: str = "") -> str:
     정화를 통과하는 <img src="data:image/svg+xml;base64,…">로 감싸서 넣는다."""
     data = base64.b64encode(svg(icon, size).encode("utf-8")).decode("ascii")
     alt = escape(label, quote=True)
+    hidden = "" if label else ' aria-hidden="true"'   # f-string 안에 역슬래시를 넣지 않는다 (Python 3.11 이하에서 문법 오류)
     return (f'<img src="data:image/svg+xml;base64,{data}" width="{size}" height="{size}" alt="{alt}"'
-            f'{"" if label else " aria-hidden=\"true\""}>')
+            f'{hidden}>')
 
 
 def industry_svg(key: str, size: int = 56) -> str:

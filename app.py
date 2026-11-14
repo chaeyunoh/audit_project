@@ -7,6 +7,7 @@
 """
 from __future__ import annotations
 
+import os
 import sys
 
 if __name__ == "__main__":
@@ -22,8 +23,15 @@ from dotenv import load_dotenv
 
 import ui
 
-# .env의 키(DART_API_KEY, ANTHROPIC_API_KEY)를 읽는다. 이미 설정된 환경변수가 있으면 그쪽이 우선.
+# DART_API_KEY를 읽는 곳 (먼저 찾은 값을 쓴다)
+#  1) 이미 설정된 환경변수   2) 로컬의 .env 파일   3) 웹 배포(Streamlit Community Cloud)의 Secrets 설정
 load_dotenv(override=False)
+if not os.getenv("DART_API_KEY"):
+    try:
+        if "DART_API_KEY" in st.secrets:
+            os.environ["DART_API_KEY"] = str(st.secrets["DART_API_KEY"])
+    except Exception:  # 로컬에는 secrets.toml이 없어 st.secrets 접근 자체가 실패할 수 있다 — 무시
+        pass
 
 st.set_page_config(page_title="AI Audit Industry Scanner", page_icon="🔎", layout="wide")
 ui.inject_css()
