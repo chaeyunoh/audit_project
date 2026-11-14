@@ -129,3 +129,12 @@ def test_annual_report_with_text_falls_back_on_missing_file(monkeypatch):
     monkeypatch.setattr(DartCollector, "document_text", doc)
     rpt, text = DartCollector("k" * 40).annual_report_with_text("c")
     assert rpt["rcept_no"] == "orig" and text == "본문"
+
+
+# ---------- 화장품 회사에 '석유화학을 참고하라'고 제안하지 않는다 (에이피알) ----------
+def test_related_industry_hint_needs_some_textual_overlap():
+    cosmetics = [SourceDoc(doc_id="S02", title="사업의 내용", publisher="DART",
+                           raw_text="당사는 화장품과 뷰티 디바이스를 개발해 온라인으로 판매합니다. " * 5)]
+    r = run("t", cosmetics, {"induty_code": "20423"}, OfflineAnalyzer(), save=False)
+    assert not kb.is_supported(r.snapshot.industry_key)
+    assert not any("석유화학" in w for w in r.warnings)

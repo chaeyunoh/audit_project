@@ -118,6 +118,7 @@ def related_industry(induty_code: str) -> str | None:
 
 
 SAME_DIVISION_MIN_HITS = 30  # 업종코드가 밖일 때 같은 중분류 산업을 적용하려면 본문에서 이만큼 확인돼야 함
+RELATED_HINT_MIN_HITS = 5    # 적용까지는 아니어도 '참고하라'고 제안하려면 최소 이만큼은 나와야 함
 
 
 def keyword_hits(industry_key: str, text: str) -> int:

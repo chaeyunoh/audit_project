@@ -106,6 +106,11 @@ def run(company: str, docs: list[SourceDoc], meta: dict, analyzer,
     if not kb.is_supported(industry_key) and not kb.is_holding((meta.get("induty_code") or "").strip()):
         code = (meta.get("induty_code") or "").strip()
         rel = kb.related_industry(code)
+        # 같은 중분류라도 사업 내용이 전혀 다를 수 있다 (화장품 20423 ↔ 석유화학 201).
+        # 본문에 그 산업의 표현이 어느 정도 나올 때만 '참고하라'고 제안한다.
+        biz = " ".join(d.raw_text for d in kept if d.doc_id not in set((meta.get("rpt_docs") or {}).values()))
+        if rel and kb.keyword_hits(rel, biz) < kb.RELATED_HINT_MIN_HITS:
+            rel = None
         warnings.append(
             f"이 회사의 업종({ksic.label(code)})은 산업 지식베이스에 아직 없습니다. 업종 일반형 가치사슬과 "
             "감사기준상 공통 영역으로 정리했습니다." + (f" 같은 중분류의 '{kb.industries()[rel]['name']}'을(를) 참고하려면 사이드바에서 직접 지정하세요."

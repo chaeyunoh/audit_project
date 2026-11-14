@@ -130,3 +130,28 @@ def test_holding_company_code_needs_business_text():
     assert resolve_industry({"induty_code": "64992"}, bank) == "banking"       # 신한지주·KB금융
     key = resolve_industry({"induty_code": "64992"}, DOC)                    # SK처럼 근거가 약하면
     assert key == "ksic:64992" and kb.industry(key)["template"] == "지주회사 일반형"
+
+
+def test_ksic_prefixes_match_real_companies():
+    """실제 상장사 업종코드(OpenDART 기업개황)로 확인한 분류. 넓은 접두어가 다른 업종을 끌어오지 않게 한다."""
+    expect = {
+        # 석유화학·정유 (맞게 들어와야 함)
+        "20111": "chemical",   # 롯데케미칼, LG화학
+        "201": "chemical",     # 금호석유화학
+        "2050": "chemical",    # 효성티앤씨 (화학섬유)
+        "19210": "chemical",   # S-Oil
+        # 화장품은 석유화학이 아님 (에이피알·아모레퍼시픽·코스맥스 20423, LG생활건강 20422)
+        "20423": None, "20422": None,
+        # 철강
+        "2411": "steel", "241": "steel",
+        # 비철금속 제련은 철강이 아님 (고려아연 24213, 풍산 242)
+        "24213": None, "242": None,
+    }
+    for code, key in expect.items():
+        assert kb.industry_from_ksic(code) == key, (code, kb.industry_from_ksic(code))
+
+
+def test_subclass_names_avoid_misleading_division_names():
+    assert ksic.label("20423") == "KSIC 20423 · 화장품 제조업"          # 에이피알·아모레퍼시픽
+    assert ksic.label("24213") == "KSIC 24213 · 비철금속 제련업"        # 고려아연
+    assert ksic.label("63120") == "KSIC 63120 · 정보서비스업"          # 세부 이름이 없으면 중분류
