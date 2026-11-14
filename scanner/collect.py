@@ -41,9 +41,18 @@ class DartCollector:
         self.timeout = timeout
 
     def _get(self, endpoint: str, **params) -> requests.Response:
-        r = requests.get(f"{DART_BASE}/{endpoint}", params={"crtfc_key": self._key, **params},
-                         timeout=self.timeout)
-        r.raise_for_status()
+        # requests의 오류 메시지에는 요청 URL 전체가 들어가고, 그 URL에 인증키(crtfc_key)가 있다.
+        # 그대로 올리면 화면 오류·로그에 키가 노출되므로, 키 없는 메시지로 바꿔서 올린다 (원래 예외는 끊음).
+        try:
+            r = requests.get(f"{DART_BASE}/{endpoint}", params={"crtfc_key": self._key, **params},
+                             timeout=self.timeout)
+            r.raise_for_status()
+        except requests.Timeout:
+            raise CollectError(f"DART 서버 응답이 없습니다({endpoint}, {self.timeout}초 초과). 잠시 후 다시 시도하세요.") from None
+        except requests.HTTPError as e:
+            raise CollectError(f"DART {endpoint} 요청 실패 (HTTP {e.response.status_code}).") from None
+        except requests.RequestException as e:
+            raise CollectError(f"DART 서버에 연결하지 못했습니다({endpoint}, {type(e).__name__}).") from None
         return r
 
     def _json(self, endpoint: str, **params) -> dict:

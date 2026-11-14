@@ -70,3 +70,22 @@ def test_manual_industry_override_is_visible():
     docs, meta = collect.load_demo(collect.list_demos()["다라반도체(가상 예시)"])
     r = run(meta["corp_name"], docs, meta, OfflineAnalyzer(), industry_key="construction", save=False)
     assert any("수동으로" in w and "건설업" in w for w in r.warnings)
+
+
+# ---------- DART 오류 메시지에 인증키가 새지 않는다 ----------
+def test_dart_network_errors_never_contain_the_api_key(monkeypatch):
+    import pytest
+    import requests
+
+    from scanner.collect import CollectError, DartCollector
+
+    secret = "a" * 40
+    url = f"https://opendart.fss.or.kr/api/document.xml?crtfc_key={secret}&rcept_no=1"
+    for exc in (requests.ConnectTimeout(f"Max retries exceeded with url: {url}"),
+                requests.ConnectionError(f"HTTPSConnectionPool: {url}")):
+        def boom(*a, _e=exc, **k):
+            raise _e
+        monkeypatch.setattr(requests, "get", boom)
+        with pytest.raises(CollectError) as info:
+            DartCollector(secret)._get("document.xml", rcept_no="1")
+        assert secret not in str(info.value) and info.value.__cause__ is None and info.value.__suppress_context__
