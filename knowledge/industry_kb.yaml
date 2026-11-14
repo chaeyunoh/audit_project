@@ -1,0 +1,2013 @@
+# 산업 특성 → 잠재적 감사 검토 영역 지식베이스 (Risk Mapping의 유일한 근거)
+#
+# 원칙
+#  - AI는 아래 trait_id 중 '어떤 특성이 회사에 해당하는지'만 제안할 수 있다.
+#  - 계정과목·경영진 주장·확인 질문의 기본 세트는 사람이 검토한 이 파일에서만 나온다.
+#  - 문구는 '결론'이 아니라 '확인 필요성'으로 작성한다.
+#  - 이 파일 수정 시 kb_version을 올리고 변경 사유를 CHANGELOG에 남긴다.
+kb_version: "2026.11-4"  # 11-4 산업 9개 추가(초안)·업종 일반 가치사슬 / 11-1 재무 지표 / 11-2 550·570·510 / 11-3 백화점·면세, 2차전지(초안)
+
+assertion_glossary:
+  발생사실: 기록된 거래가 실제로 발생했는가 (Occurrence)
+  완전성: 기록되어야 할 거래·잔액이 모두 기록되었는가 (Completeness)
+  정확성: 금액이 정확히 기록되었는가 (Accuracy)
+  기간귀속: 올바른 회계기간에 기록되었는가 (Cut-off)
+  실재성: 자산·부채가 실제로 존재하는가 (Existence)
+  평가와배분: 적절한 금액으로 평가되었는가 (Valuation & Allocation)
+  권리와의무: 회사가 권리·의무를 보유하는가 (Rights & Obligations)
+  표시와공시: 적절히 분류·공시되었는가 (Presentation & Disclosure)
+
+# 감사기준상 산업과 무관하게 항상 고려되는 영역 (산업 판단과 분리해 표시)
+baseline_risks:
+  - risk_id: G-REV
+    title: 수익인식 관련 부정위험의 추정
+    trait: 감사기준서 240은 수익인식에 부정위험이 존재한다고 추정하도록 요구
+    potential_risk: 수익인식과 관련한 부정위험 추정의 반박 가능 여부 검토 필요
+    accounts: [매출, 매출채권]
+    assertions: [발생사실, 기간귀속]
+    references: [감사기준서 240]
+    evidence_docs: [수익인식 회계정책, 기말 전후 매출 거래 내역, 주요 계약서]
+    metrics:
+      - name: 매출채권 증가율 − 매출 증가율
+        kind: growth_gap
+        num: receivables
+        den: revenue
+        signal: {threshold: 15, direction: up}
+        question: "{cur_year}년 매출채권 증가율이 매출 증가율보다 {cur} 높다. 기말 전후 매출 중 회수되지 않은 거래의 내용과 회수 조건은?"
+    priority: 2
+    questions:
+      - 회사의 주요 수익 유형별 수익인식 시점은 언제인가?
+      - 기말 전후로 비경상적으로 큰 매출 또는 반품이 있었는가?
+  - risk_id: G-MO
+    title: 경영진의 통제 무력화 위험
+    trait: 감사기준서 240은 모든 기업에서 경영진 통제 무력화 위험을 고려하도록 요구
+    potential_risk: 분개·회계추정·비경상 거래를 통한 통제 무력화 가능성 검토 필요
+    accounts: [전 계정 (분개 테스트)]
+    assertions: [발생사실, 정확성]
+    references: [감사기준서 240]
+    evidence_docs: [수기 분개 목록, 결산 조정 분개, 주요 회계추정 변경 내역]
+    priority: 2
+    questions:
+      - 결산 시 수기로 입력된 분개의 승인 절차는 무엇인가?
+      - 당기 중 회계추정이나 회계정책의 변경이 있었는가?
+
+  - risk_id: G-RP
+    title: 특수관계자 거래 식별의 완전성
+    trait: 감사기준서 550은 특수관계자와 그 거래의 식별·공시를 모든 감사에서 다루도록 요구
+    potential_risk: 특수관계자 거래의 식별 누락 또는 공시 불일치 가능성에 대한 확인 필요성이 존재
+    accounts: [특수관계자 거래 주석, 관련 채권·채무]
+    assertions: [완전성, 표시와공시]
+    references: [감사기준서 550, K-IFRS 제1024호]
+    evidence_docs: [경영진이 작성한 특수관계자 목록, 이사회 의사록, 대주주 등과의 거래 내역, 거래 계약서]
+    priority: 2
+    questions:
+      - 경영진이 관리하는 특수관계자 목록과 당기 중 변동 내역은?
+      - 정상적인 거래 과정을 벗어난 특수관계자 거래(자금대여, 담보제공 등)가 있었는가?
+
+# 계획 중요성 (감사기준서 320) — 도구는 '제안'만 하고, 기준과 비율은 감사인이 정한다.
+# 비율은 실무에서 흔히 쓰는 범위의 예시값이다. 실제 적용은 소속 법인의 방법론을 따른다.
+materiality:
+  benchmarks:
+    - {key: pretax_income, name: 법인세비용차감전순이익, pct: 5, range: "3~10%", note: 이익을 중시하는 영리기업의 일반적 기준}
+    - {key: revenue, name: 매출, pct: 1, range: "0.5~2%", note: 이익이 손실이거나 변동이 클 때 대안}
+    - {key: total_assets, name: 자산총계, pct: 1, range: "0.5~2%", note: 자산 중심 기업(금융·지주 등)}
+    - {key: total_equity, name: 자본총계, pct: 2, range: "1~5%", note: 순자산이 주된 관심사일 때}
+  performance_pct: {normal: 75, higher_risk: 50}   # 초도감사·계속기업 신호 등 위험이 높으면 낮춘다
+  trivial_pct: 5                                   # 명백히 사소한 금액 = 계획 중요성의 5% (예시)
+  volatility_limit: 50                             # 세전이익이 전년 대비 이 비율(%) 이상 변하면 매출 기준을 제안 (휴리스틱)
+
+# 조건이 충족될 때만 Risk Map에 추가되는 영역
+conditional_risks:
+  going_concern:
+    thresholds: {debt_warn: 200, debt_danger: 400}   # 산업별 차이가 큼(건설은 높게 형성) — 수준 판정 참고값
+    risk:
+      risk_id: G-GC
+      title: 계속기업 가정 관련 사건·상황 검토
+      trait: 재무 지표에서 감사기준서 570이 예시하는 재무적 사건·상황이 관찰됨
+      potential_risk: 계속기업 가정에 유의적 의문을 제기할 수 있는 사건·상황의 존재 여부에 대한 확인 필요성이 존재
+      accounts: [차입금, 유동성, 계속기업 관련 주석]
+      assertions: [표시와공시, 평가와배분]
+      references: [감사기준서 570, K-IFRS 제1001호]
+      evidence_docs: [경영진의 계속기업 평가 자료, 향후 12개월 자금수지 계획, 차입약정 및 재무약정 준수 내역]
+      priority: 1
+      questions:
+        - 경영진은 보고기간말로부터 최소 12개월에 대한 계속기업 평가를 수행했는가? 그 가정은?
+        - 차입약정의 재무약정(부채비율 등) 위반 또는 만기 연장 협의가 있었는가?
+  first_year:
+    risk:
+      risk_id: G-OB
+      title: 초도감사 기초잔액
+      trait: 초도감사에서는 전기 감사인의 감사 결과와 기초잔액을 별도로 확인해야 함
+      potential_risk: 기초잔액이 당기 재무제표를 중요하게 왜곡시키는지와 회계정책의 일관성에 대한 확인 필요성이 존재
+      accounts: [기초잔액 전반]
+      assertions: [실재성, 완전성, 평가와배분]
+      references: [감사기준서 510, 감사기준서 300]
+      evidence_docs: [전기 감사보고서, 전기 감사인 조서 열람 결과, 전기말 시산표]
+      priority: 1
+      questions:
+        - 전기 감사인의 감사보고서에 변형의견 또는 강조사항이 있었는가?
+        - 전기 감사인과의 커뮤니케이션 및 조서 열람이 가능한가?
+
+
+# 업종 일반 가치사슬 — 지식베이스에 없는 업종(KSIC)도 오프라인에서 가치사슬로 읽을 수 있게 하는 대분류 템플릿.
+# 산업 특성·위험은 없다(판단을 만들지 않음). 단계 keywords로 사업보고서 원문 문장을 찾아 붙인다.
+generic_value_chains:
+  - key: manufacturing
+    name: 제조업 일반형
+    ksic_divisions: [10-34]
+    value_chain: [연구개발, 원재료 조달, 생산, 판매·출하, 사후관리]
+    stage_info:
+      연구개발:
+        icon: design
+        do: "제품을 설계하고 개선한다"
+        money: "회사 → 연구인력: 연구개발비"
+        books: "연구비·개발비(자본화 판단)"
+        keywords: [연구개발, 개발, 특허, 신제품, 기술]
+      원재료 조달:
+        icon: truck
+        do: "원재료·부품을 국내외에서 사들인다"
+        money: "회사 → 공급사: 원재료 대금"
+        books: "재고자산(원재료), 매입채무"
+        keywords: [원재료, 원자재, 부품, 매입, 공급사, 조달]
+      생산:
+        icon: package
+        do: "공장에서 제품을 만든다"
+        money: "인건비·설비비가 제품 원가에 쌓인다"
+        books: "재공품·제품, 유형자산, 감가상각비"
+        keywords: [생산, 공장, 생산능력, 가동률, 설비]
+      판매·출하:
+        icon: sell
+        do: "고객에게 제품을 팔고 출하한다"
+        money: "고객 → 회사: 판매대금"
+        books: "매출, 매출채권"
+        keywords: [판매, 매출, 고객, 수출, 거래처, 판매경로]
+      사후관리:
+        icon: repair
+        do: "보증수리와 고객 대응을 한다"
+        money: "회사 → 고객: 보증수리 비용"
+        books: "판매보증충당부채"
+        keywords: [품질, 보증, A/S, 반품]
+
+  - key: utilities
+    name: 에너지·수도·환경 일반형
+    ksic_divisions: [35-39]
+    value_chain: [설비 투자, 연료·원료 조달, 생산·공급, 요금 청구, 설비 유지·환경]
+    stage_info:
+      설비 투자:
+        icon: build
+        do: "발전소·배관·처리시설을 짓는다"
+        money: "회사 → 건설사·장비사: 설비투자"
+        books: "유형자산·건설중인자산"
+        keywords: [설비, 발전소, 투자, 건설, 시설]
+      연료·원료 조달:
+        icon: ship
+        do: "연료와 원료를 들여온다"
+        money: "회사 → 공급사: 연료비"
+        books: "재고자산, 매입채무"
+        keywords: [연료, LNG, 석탄, 원료, 구매]
+      생산·공급:
+        icon: tower
+        do: "전기·가스·용수를 만들어 공급한다"
+        money: "운영비가 공급 원가에 쌓인다"
+        books: "매출원가, 감가상각비"
+        keywords: [발전, 공급, 생산, 판매량, 이용률]
+      요금 청구:
+        icon: invoice
+        do: "사용량에 따라 요금을 청구한다"
+        money: "고객 → 회사: 사용 요금"
+        books: "매출, 미청구 사용분(미수금)"
+        keywords: [요금, 단가, 정산, 계약]
+      설비 유지·환경:
+        icon: repair
+        do: "설비를 보수하고 환경 규제에 대응한다"
+        money: "회사 → 보수업체·정부: 수선비, 배출권"
+        books: "복구충당부채, 배출부채"
+        keywords: [보수, 환경, 배출, 안전, 복구]
+
+  - key: trade
+    name: 도소매 일반형
+    ksic_divisions: [45-47]
+    value_chain: [상품 매입, 물류·재고, 판매, 판촉·회원, 반품·정산]
+    stage_info:
+      상품 매입:
+        icon: contract
+        do: "공급사에서 상품을 사들이거나 위탁받는다"
+        money: "회사 → 공급사: 상품 대금"
+        books: "재고자산(상품), 매입채무"
+        keywords: [매입, 공급사, 협력사, 상품, 직매입, 특약매입]
+      물류·재고:
+        icon: truck
+        do: "물류센터에서 보관하고 매장·고객에게 보낸다"
+        money: "회사 → 물류사: 운송·보관비"
+        books: "재고자산 실사, 물류비"
+        keywords: [물류, 배송, 재고, 센터]
+      판매:
+        icon: store
+        do: "매장과 온라인에서 판다"
+        money: "고객 → 회사: 판매대금"
+        books: "매출(총액·순액 판단)"
+        keywords: [매장, 점포, 온라인, 판매, 고객]
+      판촉·회원:
+        icon: brand
+        do: "할인 행사와 포인트로 고객을 모은다"
+        money: "회사 → 고객: 할인, 포인트"
+        books: "포인트 이연수익, 판매촉진비"
+        keywords: [포인트, 회원, 할인, 판촉, 프로모션]
+      반품·정산:
+        icon: invoice
+        do: "반품을 받고 공급사와 정산한다"
+        money: "공급사와 반품·장려금 정산"
+        books: "환불부채, 미지급금"
+        keywords: [반품, 정산, 장려금, 수수료]
+
+  - key: transport
+    name: 운수·물류 일반형
+    ksic_divisions: [49-52]
+    value_chain: [운송 수단 확보, 영업·계약, 운송·보관, 운임 청구, 정비·안전]
+    stage_info:
+      운송 수단 확보:
+        icon: ship
+        do: "선박·항공기·차량을 사들이거나 빌린다"
+        money: "회사 → 리스사·제조사: 구입·리스료"
+        books: "유형자산, 사용권자산·리스부채"
+        keywords: [선박, 항공기, 차량, 리스, 선대, 기단]
+      영업·계약:
+        icon: contract
+        do: "화주·승객과 운송계약을 맺는다"
+        money: "고객 → 회사: 선수금"
+        books: "계약부채"
+        keywords: [계약, 화주, 영업, 노선, 수주]
+      운송·보관:
+        icon: truck
+        do: "화물·승객을 실어 나르고 보관한다"
+        money: "연료비·인건비가 든다"
+        books: "운항원가, 연료비"
+        keywords: [운송, 운항, 물동량, 보관, 터미널, 화물]
+      운임 청구:
+        icon: invoice
+        do: "운임을 청구하고 받는다"
+        money: "고객 → 회사: 운임"
+        books: "매출(운항 진행분), 매출채권"
+        keywords: [운임, 요금, 매출, 정산]
+      정비·안전:
+        icon: repair
+        do: "정기 정비와 안전 점검을 한다"
+        money: "회사 → 정비업체: 정비비"
+        books: "정비충당부채·복구의무"
+        keywords: [정비, 안전, 사고, 보험]
+
+  - key: ict
+    name: 정보통신 일반형
+    ksic_divisions: [58-63]
+    value_chain: [개발·제작, 서비스 출시, 고객 확보, 과금·정산, 운영·투자]
+    stage_info:
+      개발·제작:
+        icon: code
+        do: "소프트웨어·콘텐츠·서비스를 만든다"
+        money: "회사 → 개발 인력: 인건비"
+        books: "개발비 자본화, 콘텐츠 무형자산"
+        keywords: [개발, 제작, 콘텐츠, 소프트웨어, 기술]
+      서비스 출시:
+        icon: tower
+        do: "서비스를 출시하고 배포한다"
+        money: "회사 → 플랫폼·서버: 수수료, 서버비"
+        books: "지급수수료, 클라우드 비용"
+        keywords: [출시, 서비스, 플랫폼, 앱, 론칭]
+      고객 확보:
+        icon: store
+        do: "이용자·기업 고객을 모은다"
+        money: "회사 → 광고 매체: 마케팅비"
+        books: "광고선전비, 계약원가"
+        keywords: [이용자, 고객, 가입자, 마케팅, MAU]
+      과금·정산:
+        icon: invoice
+        do: "구독료·라이선스·광고비를 받는다"
+        money: "고객 → 회사: 이용료"
+        books: "매출(기간 안분), 계약부채"
+        keywords: [구독, 라이선스, 광고, 결제, 매출]
+      운영·투자:
+        icon: royalty
+        do: "서비스를 운영하고 다른 회사에 투자한다"
+        money: "회사 → 피투자회사: 투자금"
+        books: "영업권·투자주식 손상"
+        keywords: [투자, 인수, 운영, 유지보수]
+
+  - key: finance
+    name: 금융·보험 일반형
+    ksic_divisions: [64-66]
+    value_chain: [자금 조달, 상품 판매·심사, 자금 운용, 수익 인식, 리스크 관리]
+    stage_info:
+      자금 조달:
+        icon: bank
+        do: "예금·채권·보험료로 자금을 모은다"
+        money: "고객·시장 → 회사: 자금"
+        books: "예수부채·사채·보험계약부채"
+        keywords: [조달, 예금, 차입, 사채, 보험료]
+      상품 판매·심사:
+        icon: contract
+        do: "대출·보험·투자 상품을 심사해 판다"
+        money: "회사 → 판매채널: 수수료"
+        books: "대출채권, 보험계약"
+        keywords: [대출, 여신, 보험, 상품, 심사, 판매]
+      자금 운용:
+        icon: royalty
+        do: "모은 자금을 유가증권·대출로 굴린다"
+        money: "회사 → 시장: 투자"
+        books: "금융자산 공정가치·상각후원가"
+        keywords: [운용, 투자, 유가증권, 자산운용]
+      수익 인식:
+        icon: invoice
+        do: "이자·수수료·보험수익을 번다"
+        money: "고객 → 회사: 이자·수수료"
+        books: "이자수익, 수수료수익, 보험수익"
+        keywords: [이자, 수수료, 수익, 마진]
+      리스크 관리:
+        icon: test
+        do: "신용·시장 위험을 관리하고 충당금을 쌓는다"
+        money: "부실 자산 정리"
+        books: "대손충당금(기대신용손실)"
+        keywords: [리스크, 충당금, 건전성, 연체, 자본비율]
+
+  - key: real_estate
+    name: 부동산·임대 일반형
+    ksic_divisions: [68-69]
+    value_chain: [자산 매입, 개발·시공, 분양·임대, 임대료 수취, 자산 관리·매각]
+    stage_info:
+      자산 매입:
+        icon: bid
+        do: "부지와 건물을 사들인다"
+        money: "회사 → 매도인: 매입 대금"
+        books: "투자부동산·재고(용지)"
+        keywords: [매입, 부지, 토지, 취득]
+      개발·시공:
+        icon: build
+        do: "건물을 짓거나 고친다"
+        money: "회사 → 건설사: 공사비"
+        books: "건설중인자산, 차입원가 자본화"
+        keywords: [개발, 시공, 공사, 리모델링]
+      분양·임대:
+        icon: contract
+        do: "분양하거나 임대차 계약을 맺는다"
+        money: "고객 → 회사: 분양대금·보증금"
+        books: "분양수익, 임대보증금"
+        keywords: [분양, 임대, 임차인, 계약]
+      임대료 수취:
+        icon: invoice
+        do: "임대료와 관리비를 받는다"
+        money: "임차인 → 회사: 임대료"
+        books: "임대수익(정액), 미수금"
+        keywords: [임대료, 관리비, 공실, 수익]
+      자산 관리·매각:
+        icon: complete
+        do: "자산을 관리하고 팔아 차익을 낸다"
+        money: "매수인 → 회사: 매각 대금"
+        books: "공정가치 평가, 처분손익"
+        keywords: [매각, 평가, 공정가치, 관리]
+
+  - key: holding
+    name: 지주회사 일반형
+    ksic_prefixes: ["64992"]
+    ksic_divisions: []
+    value_chain: [자회사 투자, 경영 관리·브랜드, 배당·로열티 수취, 자금 지원·보증, 포트폴리오 조정]
+    stage_info:
+      자회사 투자:
+        icon: royalty
+        do: "자회사 지분을 보유하고 새 사업에 출자한다"
+        money: "지주회사 → 자회사: 출자금"
+        books: "종속기업·관계기업 투자주식, 연결범위"
+        keywords: [자회사, 종속회사, 출자, 지분, 투자]
+      경영 관리·브랜드:
+        icon: brand
+        do: "그룹 전략을 세우고 브랜드를 관리한다"
+        money: "자회사 → 지주회사: 경영자문 수수료"
+        books: "수수료수익, 특수관계자 거래"
+        keywords: [브랜드, 경영자문, 상표권, 그룹]
+      배당·로열티 수취:
+        icon: invoice
+        do: "자회사에서 배당과 상표권 사용료를 받는다"
+        money: "자회사 → 지주회사: 배당금, 로열티"
+        books: "배당금수익(영업수익), 특수관계자 주석"
+        keywords: [배당, 로열티, 상표권 사용료, 영업수익]
+      자금 지원·보증:
+        icon: bank
+        do: "자회사에 자금을 빌려주거나 보증을 선다"
+        money: "지주회사 → 자회사: 대여금 / 금융기관: 지급보증"
+        books: "대여금, 금융보증부채, 우발부채 주석"
+        keywords: [대여, 보증, 차입, 자금]
+      포트폴리오 조정:
+        icon: contract
+        do: "자회사를 사고팔거나 합병·분할한다"
+        money: "매수인 → 지주회사: 처분 대가"
+        books: "처분손익, 사업결합·영업권, 손상"
+        keywords: [인수, 매각, 합병, 분할, 손상]
+
+  - key: services
+    name: 서비스업 일반형
+    ksic_divisions: [01-09, 41-44, 53-57, 70-99]
+    value_chain: [서비스 기획, 인력·설비 확보, 고객 계약, 서비스 제공, 대금 청구·회수]
+    stage_info:
+      서비스 기획:
+        icon: design
+        do: "제공할 서비스를 기획한다"
+        money: "회사 → 기획 인력: 인건비"
+        books: "판매비와관리비"
+        keywords: [서비스, 사업, 기획, 개발]
+      인력·설비 확보:
+        icon: build
+        do: "인력과 설비를 갖춘다"
+        money: "회사 → 직원·공급사: 급여, 설비비"
+        books: "인건비, 유형자산·사용권자산"
+        keywords: [인력, 직원, 설비, 시설]
+      고객 계약:
+        icon: contract
+        do: "고객과 서비스 계약을 맺는다"
+        money: "고객 → 회사: 선수금"
+        books: "계약부채"
+        keywords: [계약, 고객, 수주, 거래처]
+      서비스 제공:
+        icon: complete
+        do: "계약한 서비스를 제공한다"
+        money: "제공 원가가 든다"
+        books: "매출원가, 진행률(기간 안분)"
+        keywords: [제공, 운영, 수행, 용역]
+      대금 청구·회수:
+        icon: invoice
+        do: "대금을 청구하고 받는다"
+        money: "고객 → 회사: 서비스 대금"
+        books: "매출, 매출채권, 대손"
+        keywords: [매출, 청구, 회수, 대금]
+
+industries:
+  construction:
+    name: 건설업
+    group: 건설·인프라
+    summary: 수주한 공사를 수년에 걸쳐 수행하는 산업. 진행률·총예정원가 같은 추정과 PF 보증이 재무제표를 크게 좌우한다
+    ksic_prefixes: ["41", "42"]
+    detect_keywords: [건설, 수주, 공사, 도급, 시공, 분양, 플랜트, 토목, 건축]
+    profile:
+      business_model:
+        - 발주처로부터 공사를 수주하고 계약에 따라 공사를 수행해 대가를 받는다
+        - 장기 공사는 진행 정도(투입원가 기준 등)에 따라 수익을 인식하는 경우가 많다
+        - 주요 원가는 재료비, 외주비(하도급), 노무비, 현장경비로 구성된다
+      value_chain: [수주·입찰, 도급계약, 착공, 공사 진행, 기성 청구, 준공, 하자보수·정산]
+      stakeholders: [발주처, 시행사, 하도급업체, 금융기관(PF 대주), 보증기관]
+      stage_info:   # 가치사슬 단계 설명: 무슨 일 / 돈의 흐름 / 장부에 남는 것 (일러스트 키: icon)
+        수주·입찰: {icon: bid, do: "발주처 입찰에 참여하거나 시행사와 협의해 공사를 따낸다", money: "입찰보증금 납부. 민간 주택사업은 시행사 PF에 책임준공·보증 제공", books: "수주잔고(공시), 지급보증·약정(주석)"}
+        도급계약: {icon: contract, do: "공사 범위·계약금액·기성 조건·공기를 정해 도급계약을 맺는다", money: "발주처 → 회사: 선수금(계약금)", books: "계약부채(선수금), 계약금액 = 진행률 계산의 기준"}
+        착공: {icon: groundbreak, do: "현장을 열고 실행예산(총예정원가)을 세워 하도급을 발주한다", money: "회사 → 협력업체: 선급금, 자재 선발주", books: "총공사예정원가(추정), 선급금"}
+        공사 진행: {icon: build, do: "자재 투입·외주 시공으로 원가가 쌓이며 진행률이 올라간다", money: "회사 → 협력업체·자재사: 외주비·자재비·노무비", books: "공사원가, 진행률 기준 공사수익, 계약자산(미청구공사)"}
+        기성 청구: {icon: invoice, do: "공정만큼 발주처에 기성금을 청구하고 회수한다", money: "발주처 → 회사: 기성금", books: "공사미수금, 계약자산·계약부채, 손실충당금"}
+        준공: {icon: complete, do: "공사를 끝내고 발주처가 인수한다", money: "발주처 → 회사: 준공정산금·유보금", books: "최종 계약금액 확정, 공사손실 확정"}
+        하자보수·정산: {icon: repair, do: "하자보수 기간에 대응하고 하도급을 최종 정산한다", money: "회사 → 협력업체: 최종 정산금, 하자보수 비용", books: "하자보수충당부채, 미지급 외주비"}
+    traits:
+      - trait_id: CON-LTC
+        name: 장기공사계약
+        stage: 도급계약   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [진행률, 진행기준, 투입법, 공사수익, 도급계약, 수주잔고, 수주잔액]
+        risks:
+          - risk_id: CON-R1
+            title: 진행률 기반 수익인식
+            potential_risk: 장기계약 특성상 진행률 산정과 수익 인식 금액·시점에 대한 확인 필요성이 존재
+            accounts: [공사수익(매출), 계약자산(미청구공사), 계약부채(초과청구공사)]
+            assertions: [발생사실, 정확성, 기간귀속]
+            references: [K-IFRS 제1115호, 감사기준서 540]
+            evidence_docs: [주요 도급계약서, 프로젝트별 진행률 산정표, 기성청구 내역, 계약 변경 합의서]
+            metrics:
+              - name: 계약자산 ÷ 매출
+                kind: ratio
+                num: contract_assets
+                den: revenue
+                signal: {threshold: 5, direction: up}
+                question: "계약자산(미청구공사) ÷ 매출이 {prev}에서 {cur}로 변동했다({change}). 증가에 기여한 주요 프로젝트와 청구가 지연된 사유는?"
+            priority: 1
+            questions:
+              - 진행률은 어떤 방식(투입원가 기준 등)으로 산정하며, 당기 중 변경이 있었는가?
+              - 진행률 산정에 포함되지 않아야 할 원가(미설치 자재 등)는 어떻게 구분하는가?
+              - 계약 변경(설계변경·물가변동)은 언제, 어떤 근거로 계약금액에 반영하는가?
+      - trait_id: CON-EST
+        name: 총공사예정원가 추정 변동
+        stage: 공사 진행   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [예정원가, 원가율, 원자재, 자재비, 공사원가, 원가 상승]
+        risks:
+          - risk_id: CON-R2
+            title: 총공사예정원가 추정
+            potential_risk: 원가 변동성이 큰 산업 특성상 총공사예정원가 추정과 그 변경의 근거를 확인할 필요성이 존재
+            accounts: [공사원가(매출원가), 계약자산, 공사손실충당부채]
+            assertions: [평가와배분, 정확성]
+            references: [K-IFRS 제1115호, 감사기준서 540]
+            evidence_docs: [프로젝트별 실행예산, 총예정원가 변경 내역 및 승인 문서, 원가 변경 사유 자료]
+            metrics:
+              - name: 매출원가율
+                kind: ratio
+                num: cogs
+                den: revenue
+                signal: {threshold: 3, direction: both}
+                question: "매출원가율이 {prev}에서 {cur}로 변동했다({change}). 원가율 변동이 큰 현장과 총예정원가 변경 내역은?"
+            priority: 1
+            questions:
+              - 당기 중 총공사예정원가가 크게 변경된 프로젝트는 무엇인가?
+              - 원가 변경의 주요 원인(자재비·외주비·공기 지연 등)은 무엇인가?
+              - 예정원가 변경은 누가 검토·승인하며, 어떤 자료에 근거하는가?
+              - 전기 예정원가와 실제 발생원가의 차이(소급 검토)는 어느 정도였는가?
+      - trait_id: CON-LOSS
+        name: 프로젝트별 수익성 변동
+        stage: 공사 진행   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [손실, 원가율 상승, 적자, 공사손실, 충당부채]
+        risks:
+          - risk_id: CON-R3
+            title: 손실 예상 프로젝트의 인식
+            potential_risk: 프로젝트별 수익성 변동 특성상 손실 예상 계약의 식별·인식 완전성 확인 필요성이 존재
+            accounts: [공사손실충당부채, 매출원가]
+            assertions: [완전성, 평가와배분]
+            references: [K-IFRS 제1115호, K-IFRS 제1037호]
+            evidence_docs: [프로젝트별 손익 예측표, 경영진 프로젝트 리뷰 회의록]
+            priority: 2
+            questions:
+              - 예상 총원가가 계약금액을 초과하는 프로젝트를 어떻게 식별하는가?
+              - 기말 이후 손익 전망이 악화된 프로젝트가 있는가?
+      - trait_id: CON-CRD
+        name: 발주처별 대금 회수 조건
+        stage: 기성 청구   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [미청구공사, 공사미수금, 대손, 대금 회수, 회수가능성, 공사비 분쟁]
+        risks:
+          - risk_id: CON-R4
+            title: 공사미수금·계약자산 회수가능성
+            potential_risk: 기성 청구·회수 구조상 채권 및 계약자산의 회수가능성 확인 필요성이 존재
+            accounts: [공사미수금(매출채권), 계약자산, 손실충당금]
+            assertions: [평가와배분, 실재성]
+            references: [K-IFRS 제1109호, 감사기준서 505]
+            evidence_docs: [발주처별 채권 연령분석, 기말 후 회수 내역, 분쟁·소송 현황]
+            metrics:
+              - name: 매출채권 회전일수
+                kind: days
+                num: receivables
+                den: revenue
+                signal: {threshold: 15, direction: up}
+                question: "매출채권 회전일수가 {prev}에서 {cur}로 늘었다. 회수가 지연된 발주처와 그 사유는?"
+            priority: 2
+            questions:
+              - 장기간 청구되지 않은 미청구공사의 발생 원인은 무엇인가?
+              - 발주처와 공사대금 관련 분쟁이 진행 중인 프로젝트가 있는가?
+      - trait_id: CON-PF
+        name: PF·지급보증 등 우발채무
+        stage: 수주·입찰   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [PF, 프로젝트파이낸싱, 지급보증, 책임준공, 채무인수, 자금보충, 우발채무]
+        risks:
+          - risk_id: CON-R5
+            title: 우발부채·금융보증의 완전성
+            potential_risk: 시행사·PF 관련 보증 구조상 우발채무의 완전성 및 공시 적정성 확인 필요성이 존재
+            accounts: [금융보증부채, 충당부채, 우발부채 주석]
+            assertions: [완전성, 권리와의무, 표시와공시]
+            references: [K-IFRS 제1037호, K-IFRS 제1109호, 감사기준서 501]
+            evidence_docs: [지급보증·책임준공 약정 목록, 금융기관 조회서, 이사회 의사록, 법률 조회서]
+            priority: 1
+            questions:
+              - 책임준공·자금보충·채무인수 약정의 전체 목록과 한도는 어떻게 관리되는가?
+              - 보증 대상 사업장 중 분양률 또는 공정률이 계획에 미달하는 곳이 있는가?
+      - trait_id: CON-SUB
+        name: 하도급·외주 의존
+        stage: 공사 진행   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [하도급, 외주, 협력업체, 외주비]
+        risks:
+          - risk_id: CON-R6
+            title: 외주비의 기간귀속·완전성
+            potential_risk: 외주 의존 구조상 기말 외주비 미계상(기성 미확정분) 여부 확인 필요성이 존재
+            accounts: [외주비(매출원가), 미지급금]
+            assertions: [완전성, 기간귀속]
+            references: [감사기준서 330]
+            evidence_docs: [하도급 기성 확인서, 기말 후 지급 내역]
+            priority: 3
+            questions:
+              - 기말 기준 하도급 기성 중 미확정·미청구분은 어떻게 추정해 반영하는가?
+
+  semiconductor:
+    name: 반도체 제조업
+    group: 제조
+    summary: 대규모 설비투자와 가격 사이클이 특징인 장치산업. 재고 평가와 설비 손상·감가상각 판단이 핵심이다
+    ksic_prefixes: ["2611", "2612"]
+    detect_keywords: [반도체, 메모리, DRAM, 낸드, NAND, 웨이퍼, 파운드리, 패키징]
+    profile:
+      business_model:
+        - 반도체 제품을 설계·제조해 전자기기·서버 제조사 등에 판매한다
+        - 대규모 설비투자가 필요해 고정비 비중이 높고 가동률이 수익성에 큰 영향을 준다
+        - 제품 가격이 수요·공급 사이클에 따라 크게 변동한다
+      value_chain: [설계, 웨이퍼 제조(전공정), 패키징, 테스트, 판매]
+      stakeholders: [주요 고객사(세트·서버 업체), 장비·소재 공급사, 파운드리·OSAT, 정부(보조금·세제)]
+      stage_info:   # 가치사슬 단계 설명: 무슨 일 / 돈의 흐름 / 장부에 남는 것 (일러스트 키: icon)
+        설계: {icon: design, do: "제품 구조와 공정을 개발한다 (자체 설계 또는 고객 설계 수탁)", money: "회사 → 연구인력·장비: 연구개발비", books: "경상연구개발비, 개발비(무형자산)"}
+        웨이퍼 제조(전공정): {icon: wafer, do: "팹에서 웨이퍼에 회로를 새긴다. 장비 투자 규모가 매우 크다", money: "회사 → 장비·소재 공급사: 설비투자(CAPEX)·소재비", books: "유형자산·건설중인자산, 감가상각비, 재공품"}
+        패키징: {icon: package, do: "칩을 잘라 기판에 붙이고 외부와 연결한다 (자체 또는 OSAT 외주)", money: "회사 → OSAT: 외주 가공비", books: "재공품·제품, 외주가공비"}
+        테스트: {icon: test, do: "전기적 특성을 검사해 양품과 수율을 확정한다", money: "회사 → 테스트 외주사: 검사비", books: "수율이 제품 원가를 결정, 불량·체화 재고 평가"}
+        판매: {icon: sell, do: "세트·서버 업체 등에 공급한다. 판가는 업황에 따라 크게 변한다", money: "고객 → 회사: 판매대금(주로 외화), 판매장려금·가격보호 정산", books: "매출·환불부채, 매출채권, 외화환산, 재고자산 평가"}
+    traits:
+      - trait_id: SEM-PRICE
+        name: 제품가격 변동·재고 진부화
+        stage: 판매   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [가격 하락, 재고, 평가손실, 수요 둔화, 판가, 업황]
+        risks:
+          - risk_id: SEM-R1
+            title: 재고자산 순실현가능가치 평가
+            potential_risk: 가격 변동·기술 진부화 특성상 재고자산의 순실현가능가치 추정 근거 확인 필요성이 존재
+            accounts: [재고자산, 재고자산평가충당금, 매출원가]
+            assertions: [평가와배분, 실재성]
+            references: [K-IFRS 제1002호, 감사기준서 501, 감사기준서 540]
+            evidence_docs: [제품별 재고 연령분석, 기말 후 판매단가 자료, 평가충당금 산정 내역, 재고실사 결과]
+            metrics:
+              - name: 재고자산 회전일수
+                kind: days
+                num: inventory
+                den: cogs
+                signal: {threshold: 20, direction: up}
+                question: "재고자산 회전일수가 {prev}에서 {cur}로 늘었다. 증가분의 제품군 구성과 순실현가능가치 평가 시 반영한 판가 가정은?"
+            priority: 1
+            questions:
+              - 당기 중 재고평가충당금 변동이 큰 제품군은 무엇인가?
+              - 순실현가능가치 산정 시 사용한 예상 판매가격의 근거는 무엇인가?
+              - 장기 체화 재고와 단종 예정 제품은 어떻게 식별하는가?
+      - trait_id: SEM-CAPEX
+        name: 대규모 설비투자
+        stage: 웨이퍼 제조(전공정)   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [설비투자, 시설투자, 팹, 라인, 증설, 감가상각, 건설중인자산]
+        risks:
+          - risk_id: SEM-R2
+            title: 유형자산 손상·감가상각
+            potential_risk: 대규모 설비투자 특성상 손상징후 검토 및 내용연수·자본화 시점의 적정성 확인 필요성이 존재
+            accounts: [유형자산, 건설중인자산, 감가상각비, 손상차손]
+            assertions: [평가와배분, 실재성, 기간귀속]
+            references: [K-IFRS 제1016호, K-IFRS 제1036호]
+            evidence_docs: [설비별 가동률 자료, 건설중인자산 대체 내역, 손상검토 보고서]
+            metrics:
+              - name: 유형자산 증가율 − 매출 증가율
+                kind: growth_gap
+                num: ppe
+                den: revenue
+                signal: {threshold: 10, direction: up}
+                question: "{cur_year}년 유형자산 증가율이 매출 증가율보다 {cur} 높다. 신규 설비의 가동 계획과 손상징후 검토 결과는?"
+            priority: 1
+            questions:
+              - 신규 라인의 본계정 대체 시점은 어떤 기준으로 판단하는가?
+              - 가동률이 낮거나 유휴 상태인 설비가 있는가?
+              - 내용연수 추정을 최근 변경했는가? 그 근거는?
+      - trait_id: SEM-CUST
+        name: 고객 집중·계약조건
+        stage: 판매   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [주요 고객, 매출처, 장기공급, 가격 보호, 판매장려금, 리베이트]
+        risks:
+          - risk_id: SEM-R3
+            title: 변동대가 및 수익인식 조건
+            potential_risk: 고객 집중 및 가격 보호·장려금 조건 특성상 변동대가 추정과 수익인식 시점 확인 필요성이 존재
+            accounts: [매출, 환불부채, 매출채권]
+            assertions: [발생사실, 정확성, 기간귀속]
+            references: [K-IFRS 제1115호]
+            evidence_docs: [주요 고객 계약서, 판매장려금·가격보호 정산 내역, 인도조건(인코텀즈) 자료]
+            metrics:
+              - name: 매출채권 회전일수
+                kind: days
+                num: receivables
+                den: revenue
+                signal: {threshold: 15, direction: up}
+                question: "매출채권 회전일수가 {prev}에서 {cur}로 늘었다. 주요 고객과의 결제조건 변경이나 기말 집중 판매가 있었는가?"
+            priority: 2
+            questions:
+              - 주요 고객과의 계약조건(가격 보호, 물량 약정)에 당기 중 변화가 있었는가?
+              - 판매장려금과 가격 조정은 언제, 어떤 추정에 근거해 매출에서 차감하는가?
+      - trait_id: SEM-RND
+        name: 연구개발 집약
+        stage: 설계   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [연구개발, 개발비, R&D, 차세대, 공정 개발]
+        risks:
+          - risk_id: SEM-R4
+            title: 개발비 자산화 요건
+            potential_risk: 연구개발 집약 특성상 개발비 자산 인식 요건 충족 및 손상 여부 확인 필요성이 존재
+            accounts: [개발비(무형자산), 경상연구개발비]
+            assertions: [발생사실, 평가와배분]
+            references: [K-IFRS 제1038호]
+            evidence_docs: [프로젝트별 개발비 집계표, 기술적 실현가능성 검토 자료]
+            priority: 3
+            questions:
+              - 개발비 자산화 개시 시점(기술적 실현가능성)은 어떻게 판단하는가?
+      - trait_id: SEM-FX
+        name: 해외 매출·외화 노출
+        stage: 판매   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [수출, 해외, 환율, 외화, 달러, 파생상품, 헤지]
+        risks:
+          - risk_id: SEM-R5
+            title: 외화환산·파생상품
+            potential_risk: 해외 매출 비중이 높은 특성상 외화환산 및 위험회피 회계 적용의 확인 필요성이 존재
+            accounts: [외화환산손익, 파생상품자산·부채]
+            assertions: [정확성, 평가와배분, 표시와공시]
+            references: [K-IFRS 제1021호, K-IFRS 제1109호]
+            evidence_docs: [외화 채권·채무 명세, 파생상품 계약 목록, 금융기관 조회서]
+            priority: 3
+            questions:
+              - 기말 외화 잔액 환산에 사용한 환율의 출처는 무엇인가?
+
+  franchise_retail:
+    name: 가맹·유통업
+    group: 소비재
+    summary: 가맹점에 브랜드·노하우·물품을 공급해 수익을 얻는 산업. 가맹계약의 수익인식과 매장 리스가 핵심이다
+    ksic_prefixes: ["47", "56"]   # 47 소매업, 56 음식점·주점업 (7611 자동차 임대업은 오분류라 제외)
+    detect_keywords: [가맹, 가맹점, 프랜차이즈, 매장, 유통, 직영점]
+    profile:
+      business_model:
+        - 가맹점에 상표·운영 노하우를 제공하고 가맹금·로열티·물품 공급으로 수익을 얻는다
+        - 직영점 운영 시 매장 임차와 재고 관리가 비용 구조의 핵심이다
+      value_chain: [브랜드 개발, 가맹 모집·계약, 개점 지원, 물류·물품 공급, 운영 지원·로열티 수취]
+      stakeholders: [가맹점주, 물류·제조 협력사, 임대인, 공정거래위원회]
+      stage_info:   # 가치사슬 단계 설명: 무슨 일 / 돈의 흐름 / 장부에 남는 것 (일러스트 키: icon)
+        브랜드 개발: {icon: brand, do: "상표·메뉴·운영 매뉴얼을 만든다", money: "회사 → 개발·마케팅: 브랜드 투자", books: "상표권(무형자산), 광고선전비"}
+        가맹 모집·계약: {icon: contract, do: "정보공개서를 제공하고 가맹계약을 맺는다", money: "가맹점 → 본사: 가맹비·교육비·계약이행보증금", books: "가맹수익·계약부채, 예수보증금"}
+        개점 지원: {icon: store, do: "입지·인테리어·장비를 지원한다. 직영점은 본사가 직접 임차한다", money: "가맹점 → 본사: 인테리어·장비 대금 / 본사 → 임대인: 직영점 임차료", books: "공사·장비 매출, 사용권자산·리스부채"}
+        물류·물품 공급: {icon: truck, do: "필수 원재료·소모품을 가맹점에 공급한다", money: "가맹점 → 본사: 물품대금 (차액가맹금 포함)", books: "상품매출, 가맹점 채권, 재고자산"}
+        운영 지원·로열티 수취: {icon: royalty, do: "운영을 지도하고 매출에 연동된 로열티를 받는다", money: "가맹점 → 본사: 로열티·광고분담금", books: "로열티 수익, 광고분담금(예수금)"}
+    traits:
+      - trait_id: FRN-FEE
+        name: 가맹금·로열티 수익
+        stage: 가맹 모집·계약   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [가맹비, 가맹금, 로열티, 교육비, 인테리어]
+        risks:
+          - risk_id: FRN-R1
+            title: 가맹 관련 수익의 수행의무 구분
+            potential_risk: 가맹계약에 여러 약속이 묶여 있는 특성상 수행의무 구분과 수익인식 시점 확인 필요성이 존재
+            accounts: [가맹수익(매출), 계약부채]
+            assertions: [발생사실, 기간귀속]
+            references: [K-IFRS 제1115호]
+            evidence_docs: [표준 가맹계약서, 가맹금 수취·환불 내역, 정보공개서]
+            priority: 1
+            questions:
+              - 최초 가맹금은 일시에 인식하는가, 계약기간에 걸쳐 인식하는가? 그 근거는?
+              - 가맹 해지 시 가맹금 반환 조건은 무엇인가?
+      - trait_id: FRN-AR
+        name: 가맹점 채권·물품대
+        stage: 물류·물품 공급   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [물품대, 가맹점 채권, 미수금, 폐점, 해지]
+        risks:
+          - risk_id: FRN-R2
+            title: 가맹점 채권 회수가능성
+            potential_risk: 폐점·해지 발생 구조상 가맹점 채권의 회수가능성 확인 필요성이 존재
+            accounts: [매출채권, 손실충당금]
+            assertions: [평가와배분, 실재성]
+            references: [K-IFRS 제1109호]
+            evidence_docs: [가맹점별 채권 연령분석, 폐점·분쟁 가맹점 목록]
+            metrics:
+              - name: 매출채권 회전일수
+                kind: days
+                num: receivables
+                den: revenue
+                signal: {threshold: 15, direction: up}
+                question: "매출채권 회전일수가 {prev}에서 {cur}로 늘었다. 회수가 지연된 가맹점과 폐점·분쟁 현황은?"
+            priority: 2
+            questions:
+              - 당기 폐점·해지 가맹점의 채권은 어떻게 회수·처리되었는가?
+      - trait_id: FRN-LEASE
+        name: 매장 임차
+        stage: 개점 지원   # 가치사슬(profile.value_chain) 단계
+        detect_keywords: [임차, 리스, 사용권자산, 임대차, 직영점]
+        risks:
+          - risk_id: FRN-R3
+            title: 리스 회계
+            potential_risk: 다수 매장 임차 구조상 리스기간 판단과 사용권자산 손상 여부 확인 필요성이 존재
+            accounts: [사용권자산, 리스부채]
+            assertions: [완전성, 평가와배분]
+            references: [K-IFRS 제1116호, K-IFRS 제1036호]
+            evidence_docs: [임대차계약 목록, 점포별 손익, 연장선택권 판단 근거]
+            priority: 2
+            questions:
+              - 연장선택권 행사가 상당히 확실한지 판단하는 기준은 무엇인가?
+              - 영업손실이 지속되는 점포의 손상 검토를 수행했는가?
+
+  department_store:
+    name: 백화점·면세 유통업
+    group: 소비재
+    review: {status: draft, note: "2026-11 초안 — 신세계 검증용으로 작성. 감사인 검토 전"}
+    summary: "입점 브랜드 판매에서 수수료를 거두는 백화점과 면세점 중심의 유통업. 매출 총액·순액 표시, 상품권·포인트, 점포 자산이 감사 초점이다"
+    ksic_prefixes: ["47111"]
+    detect_keywords: [백화점, 면세, 특정매입, 직매입, 상품권, 점포, 아울렛, 입점]
+    profile:
+      business_model:
+        - 입점 브랜드와 특정매입(재고는 브랜드 부담, 판매 시점에 매입) 또는 임대 계약을 맺고 판매액의 일정 비율을 수수료로 받는다
+        - 직매입(회사가 재고 위험 부담) 상품과 자체·수입 브랜드는 판매액 전체를 매출로 인식한다
+        - 면세점은 공항·시내 특허를 받아 운영하며 임차료와 특허수수료가 주요 비용이다
+      value_chain: [상품 조달, 점포 운영, 판매·결제, 상품권·포인트, 정산·수수료]
+      stakeholders: [입점 브랜드(협력회사), 고객, 카드사, 공항공사 등 임대인, 관세청(면세 특허)]
+      stage_info:
+        상품 조달:
+          icon: contract
+          do: "브랜드와 특정매입·직매입·임대 중 하나의 형태로 계약한다"
+          money: "직매입은 회사 → 공급사 매입대금, 특정매입은 판매 후 정산"
+          books: "직매입 재고자산 (특정매입은 회사 재고로 잡지 않음)"
+        점포 운영:
+          icon: store
+          do: "자가 또는 임차 점포를 운영하고 주기적으로 대규모 리뉴얼 투자를 한다"
+          money: "회사 → 임대인·시공사: 임차료, 리뉴얼 투자"
+          books: "유형자산·사용권자산, 리스부채, 감가상각비"
+        판매·결제:
+          icon: sell
+          do: "고객이 매장에서 결제하고 회사가 판매대금 전액을 받는다"
+          money: "고객·카드사 → 회사: 판매대금"
+          books: "매출(직매입은 총액, 특정매입은 수수료 순액), 카드미수금"
+        상품권·포인트:
+          icon: giftcard
+          do: "상품권을 미리 팔고, 구매액에 따라 포인트를 적립해 준다"
+          money: "고객 → 회사: 상품권 대금(사용 전에 먼저 받음)"
+          books: "계약부채(상품권·포인트), 사용·소멸 시 수익"
+        정산·수수료:
+          icon: invoice
+          do: "판매대금에서 수수료를 떼고 나머지를 입점 브랜드에 지급한다"
+          money: "회사 → 입점 브랜드: 판매대금 − 수수료"
+          books: "매입채무·미지급금, 수수료 수익"
+    traits:
+      - trait_id: DS-GROSSNET
+        name: 거래 형태가 섞인 매출 (본인·대리인)
+        stage: 판매·결제
+        detect_keywords: [특정매입, 직매입, 임대매장, 순액으로, 수수료 매출, 판매수수료]
+        risks:
+          - risk_id: DS-R1
+            title: 매출의 총액·순액 표시
+            potential_risk: 직매입·특정매입·임대 등 거래 형태가 섞여 있어 본인·대리인 판단과 매출 총액·순액 표시에 대한 확인 필요성이 존재
+            accounts: [매출(상품매출·수수료수익), 매출원가]
+            assertions: [발생사실, 정확성, 표시와공시]
+            references: [K-IFRS 제1115호, 감사기준서 315]
+            evidence_docs: [거래 형태별 매출 집계표, 특정매입·임대 대표 계약서, 재고위험·가격결정권 판단 근거]
+            priority: 1
+            questions:
+              - 거래 형태(직매입·특정매입·임대)별 매출 비중과 각 형태의 회계처리(총액 또는 순액)는?
+              - 특정매입 계약에서 재고 위험과 가격 결정권이 누구에게 있다고 판단했는가? 계약상 근거는?
+              - 당기 중 거래 형태가 바뀐 브랜드(직매입과 특정매입 사이)가 있는가?
+      - trait_id: DS-GIFT
+        name: 상품권 판매
+        stage: 상품권·포인트
+        detect_keywords: [상품권, 미회수, 선수금, 계약부채]
+        risks:
+          - risk_id: DS-R2
+            title: 상품권 부채와 미회수분 수익 인식
+            potential_risk: 장기간 사용되지 않는 상품권을 수익으로 인식하는 시점·금액 추정과 상품권 부채의 완전성에 대한 확인 필요성이 존재
+            accounts: [계약부채(상품권), 매출(상품권 미회수 수익)]
+            assertions: [완전성, 평가와배분, 기간귀속]
+            references: [K-IFRS 제1115호, 감사기준서 540]
+            evidence_docs: [상품권 발행·회수 대장, 발행연도별 회수율 분석, 미회수 상품권 수익 인식 정책]
+            priority: 1
+            questions:
+              - 상품권 미회수분을 수익으로 인식하는 기준(경과 기간·회수율 추정)은 무엇이며 당기에 바뀌었는가?
+              - 상품권 발행 대장의 미회수 잔액과 장부상 상품권 부채를 대사하는가?
+      - trait_id: DS-POINT
+        name: 고객 포인트·멤버십
+        stage: 상품권·포인트
+        detect_keywords: [포인트, 마일리지, 멤버십]
+        risks:
+          - risk_id: DS-R3
+            title: 포인트의 거래가격 배분과 이연
+            potential_risk: 포인트 적립을 별도 수행의무로 보고 거래가격을 배분·이연하는 과정의 사용률 추정에 대한 확인 필요성이 존재
+            accounts: [계약부채(포인트), 매출]
+            assertions: [정확성, 평가와배분, 기간귀속]
+            references: [K-IFRS 제1115호]
+            evidence_docs: [포인트 적립·사용·소멸 내역, 사용률 추정 근거, 제휴 포인트 정산 계약]
+            priority: 2
+            questions:
+              - 포인트 사용률 추정은 어느 기간의 실적에 근거하는가?
+              - 제휴사(카드사 등)가 부담하는 포인트는 어떻게 회계처리하는가?
+      - trait_id: DS-STORE
+        name: 대형 점포 자산
+        stage: 점포 운영
+        detect_keywords: [점포, 리뉴얼, 신규 출점, 출점, 사용권자산, 증축]
+        risks:
+          - risk_id: DS-R4
+            title: 점포 자산의 손상과 리스 판단
+            potential_risk: 점포별 수익성이 낮아질 때 유형자산·사용권자산 손상 징후와 리스기간 판단에 대한 확인 필요성이 존재
+            accounts: [유형자산, 사용권자산, 리스부채, 손상차손]
+            assertions: [평가와배분, 완전성]
+            references: [K-IFRS 제1036호, K-IFRS 제1116호]
+            evidence_docs: [점포별 손익, 현금창출단위별 손상검토 자료, 주요 임대차 계약과 연장선택권 판단]
+            priority: 2
+            metrics:
+              - name: 유형자산 증가율 − 매출 증가율
+                kind: growth_gap
+                num: ppe
+                den: revenue
+                signal: {threshold: 10, direction: up}
+                question: "{cur_year}년 유형자산 증가율이 매출 증가율보다 {cur} 높다. 신규 출점·리뉴얼 투자의 회수 계획과 손상징후 검토 결과는?"
+            questions:
+              - 영업손실이 이어지는 점포에 대해 손상검토를 했는가? 회수가능액 추정의 핵심 가정은?
+              - 리뉴얼 중인 점포의 건설중인자산은 언제 본계정으로 대체하는가?
+      - trait_id: DS-INV
+        name: 직매입·수입 브랜드 재고
+        stage: 상품 조달
+        detect_keywords: [수입 브랜드, 해외 브랜드, 패션, 화장품, 자체 브랜드, 직매입]
+        risks:
+          - risk_id: DS-R5
+            title: 직매입·자체 브랜드 재고 평가
+            potential_risk: 시즌성 패션·수입 브랜드 재고의 진부화와 순실현가능가치 추정에 대한 확인 필요성이 존재
+            accounts: [재고자산, 재고자산평가충당금, 매출원가]
+            assertions: [평가와배분, 실재성]
+            references: [K-IFRS 제1002호, 감사기준서 501]
+            evidence_docs: [시즌·연령별 재고 분석, 기말 후 판매가와 할인율, 재고실사 결과]
+            priority: 2
+            metrics:
+              - name: 재고자산 회전일수
+                kind: days
+                num: inventory
+                den: cogs
+                signal: {threshold: 20, direction: up}
+                question: "재고자산 회전일수가 {prev}에서 {cur}로 늘었다. 증가분의 브랜드·시즌 구성과 평가충당금 설정 기준은?"
+            questions:
+              - 지난 시즌 재고의 평가충당금 설정 기준(경과 시즌·할인율)은?
+              - 해외 수입 브랜드와의 반품·재고 처리 조건은?
+      - trait_id: DS-DUTY
+        name: 면세 사업장
+        stage: 점포 운영
+        detect_keywords: [면세, 공항, 특허, 임차료, 여객]
+        risks:
+          - risk_id: DS-R6
+            title: 면세 사업장 임차료와 특허 관련 판단
+            potential_risk: 공항 면세 임차료 구조(고정액·매출 연동) 변경과 특허 갱신 여부에 따른 리스부채 재측정·손상 판단에 대한 확인 필요성이 존재
+            accounts: [사용권자산, 리스부채, 지급임차료, 손상차손]
+            assertions: [완전성, 평가와배분, 표시와공시]
+            references: [K-IFRS 제1116호, K-IFRS 제1036호]
+            evidence_docs: [공항 임대차 계약과 변경 합의서, 특허 기간과 갱신 현황, 면세 사업부 손익]
+            priority: 3
+            questions:
+              - 공항 임대료가 고정액에서 매출 연동으로 바뀐 경우 리스부채를 재측정했는가?
+              - 특허 만료가 다가오는 사업장의 자산 손상검토 결과는?
+
+  secondary_battery:
+    name: 2차전지 제조업
+    group: 제조
+    review: {status: draft, note: "2026-11 초안 — LG에너지솔루션 검증용으로 작성. 감사인 검토 전"}
+    summary: "완성차와 장기 공급계약을 맺고 대규모 해외 공장을 짓는 장치산업. 설비 손상, 메탈 연동 판가, 세액공제·합작법인 회계가 핵심이다"
+    ksic_prefixes: ["2820"]
+    detect_keywords: [배터리, 이차전지, 2차전지, 양극재, ESS, 전기차, EV, 셀]
+    profile:
+      business_model:
+        - 완성차(OEM)와 수년 단위 공급계약을 맺고 전기차·ESS용 배터리 셀·모듈·팩을 생산해 공급한다
+        - 판매가격은 리튬·니켈 등 원재료(메탈) 가격에 연동되어 일정 시차를 두고 조정된다
+        - 고객 가까이(북미·유럽)에 대규모 공장을 짓고, 일부는 완성차와 합작법인으로 운영한다
+      value_chain: [원재료 조달, 수주·개발, 셀·모듈 생산, 품질 검사, 완성차 공급, 보증·리콜 대응]
+      stakeholders: [완성차 고객사(OEM), 소재 공급사(양극재·음극재), 합작 파트너, 각국 정부(보조금·세액공제), 금융기관]
+      stage_info:
+        원재료 조달:
+          icon: truck
+          do: "리튬·니켈·코발트 등 메탈과 양극재·음극재를 장기계약으로 들여온다"
+          money: "회사 → 소재 공급사: 원재료 대금 (메탈 시세 연동)"
+          books: "재고자산(원재료), 매입채무"
+        수주·개발:
+          icon: contract
+          do: "완성차 차종별로 수년 단위 공급계약을 따내고 셀을 맞춤 개발한다"
+          money: "고객 → 회사: 일부 개발비·선수금"
+          books: "계약 조건이 수익인식과 손실부담계약 판단의 기초가 됨"
+        셀·모듈 생산:
+          icon: battery
+          do: "대규모 라인에서 셀을 만들고 모듈·팩으로 조립한다"
+          money: "회사 → 설비 공급사·건설사: 설비투자(CAPEX)"
+          books: "유형자산·건설중인자산, 감가상각비, 재공품"
+        품질 검사:
+          icon: test
+          do: "성능·안전성을 검사하고 수율을 관리한다"
+          money: "불량은 폐기·재작업 비용으로 나간다"
+          books: "수율이 제품 원가를 결정, 불량 재고 평가"
+        완성차 공급:
+          icon: sell
+          do: "고객 공장으로 납품한다. 메탈 가격 변동은 나중에 판가로 정산된다"
+          money: "고객 → 회사: 판매대금(외화), 판가 조정 정산"
+          books: "매출·매출채권, 판가 조정 관련 부채, 외화환산"
+        보증·리콜 대응:
+          icon: repair
+          do: "품질 문제나 화재 사고가 나면 리콜 비용을 고객과 나눠 부담한다"
+          money: "회사 → 고객: 리콜 분담금·보상"
+          books: "판매보증충당부채, 리콜 비용"
+    traits:
+      - trait_id: BAT-CAPEX
+        name: 대규모 해외 공장 투자
+        stage: 셀·모듈 생산
+        detect_keywords: [증설, 신규 공장, 북미, 가동률, 설비투자, 시설투자, 생산능력]
+        risks:
+          - risk_id: BAT-R1
+            title: 신설 공장 설비의 손상과 대체 시점
+            potential_risk: 전기차 수요 둔화로 가동률이 낮아질 때 대규모 신설 공장의 손상 징후와 건설중인자산 본계정 대체 시점에 대한 확인 필요성이 존재
+            accounts: [유형자산, 건설중인자산, 감가상각비, 손상차손]
+            assertions: [평가와배분, 실재성, 기간귀속]
+            references: [K-IFRS 제1016호, K-IFRS 제1036호, 감사기준서 540]
+            evidence_docs: [공장·라인별 가동률, 건설중인자산 대체 내역, 현금창출단위별 손상검토(사용가치 가정)]
+            priority: 1
+            metrics:
+              - name: 유형자산 증가율 − 매출 증가율
+                kind: growth_gap
+                num: ppe
+                den: revenue
+                signal: {threshold: 10, direction: up}
+                question: "{cur_year}년 유형자산 증가율이 매출 증가율보다 {cur} 높다. 신설 라인의 가동 계획과 손상검토의 수요 가정은?"
+            questions:
+              - 가동률이 계획에 못 미치는 공장·라인은? 손상검토의 매출·가동률 가정은 고객 수요 전망과 맞는가?
+              - 신설 라인의 상업생산 개시(본계정 대체)는 어떤 기준으로 판단하는가?
+      - trait_id: BAT-METAL
+        name: 메탈 가격 연동 판가
+        stage: 완성차 공급
+        detect_keywords: [메탈, 리튬, 니켈, 판가, 원재료 가격, 연동]
+        risks:
+          - risk_id: BAT-R2
+            title: 메탈 연동 판가 조정(변동대가)과 재고 평가
+            potential_risk: 원재료 가격이 시차를 두고 판가에 반영되는 구조라 기말 미확정 판가 조정분 추정과 재고의 순실현가능가치에 대한 확인 필요성이 존재
+            accounts: [매출, 환불부채·미지급금(판가 조정), 재고자산]
+            assertions: [정확성, 기간귀속, 평가와배분]
+            references: [K-IFRS 제1115호, K-IFRS 제1002호]
+            evidence_docs: [고객별 메탈 연동 조항, 기말 판가 조정 추정 내역, 기말 후 판가 정산 실적]
+            priority: 1
+            metrics:
+              - name: 재고자산 회전일수
+                kind: days
+                num: inventory
+                den: cogs
+                signal: {threshold: 20, direction: up}
+                question: "재고자산 회전일수가 {prev}에서 {cur}로 늘었다. 증가분의 구성(원재료·제품)과 메탈 가격 하락이 순실현가능가치에 반영됐는지?"
+            questions:
+              - 기말에 확정되지 않은 판가 조정분을 어떻게 추정해 매출에 반영했는가?
+              - 메탈 가격 하락기에 원재료·제품 재고의 순실현가능가치를 어떻게 산정했는가?
+      - trait_id: BAT-CREDIT
+        name: 생산 세액공제·보조금
+        stage: 셀·모듈 생산
+        detect_keywords: [IRA, 생산세액공제, AMPC, 첨단제조, 45X]
+        risks:
+          - risk_id: BAT-R3
+            title: 생산 세액공제(보조금)의 회계처리와 표시
+            potential_risk: 미국 IRA 첨단제조 생산세액공제 등 정부 지원의 회계처리 기준(정부보조금 또는 법인세) 선택과 손익 표시, 수취가능성에 대한 확인 필요성이 존재
+            accounts: [정부보조금(원가 차감 등), 미수금, 법인세]
+            assertions: [표시와공시, 발생사실, 평가와배분]
+            references: [K-IFRS 제1020호, K-IFRS 제1012호]
+            evidence_docs: [세액공제 산정 내역, 수령·양도(현금화) 실적, 회계정책 판단 메모]
+            priority: 1
+            questions:
+              - 생산세액공제를 어느 기준서로 회계처리했고 그 판단 근거는?
+              - 세액공제 금액이 영업이익에 미치는 영향과 공시 방법은?
+      - trait_id: BAT-JV
+        name: 완성차 합작법인
+        stage: 수주·개발
+        detect_keywords: [합작, 합작법인, JV, 조인트벤처]
+        risks:
+          - risk_id: BAT-R4
+            title: 합작법인의 지배력·공동약정 판단
+            potential_risk: 완성차와의 합작법인에 대한 지배력·공동지배 판단(연결 또는 지분법)과 약정 조건에 대한 확인 필요성이 존재
+            accounts: [종속기업·공동기업투자, 비지배지분, 연결범위]
+            assertions: [표시와공시, 완전성, 권리와의무]
+            references: [K-IFRS 제1110호, K-IFRS 제1111호, K-IFRS 제1112호]
+            evidence_docs: [합작계약서(의사결정 구조·지분율), 이사회 구성, 생산물 인수 약정]
+            priority: 2
+            questions:
+              - 합작법인의 관련활동(생산·가격)에 대한 의사결정 권한은 누구에게 있는가?
+              - 생산물을 파트너가 사실상 전량 인수하는 구조라면 공동영업 해당 여부를 검토했는가?
+      - trait_id: BAT-WARRANTY
+        name: 품질보증·리콜
+        stage: 보증·리콜 대응
+        detect_keywords: [리콜, 품질보증, 화재, 판매보증]
+        risks:
+          - risk_id: BAT-R5
+            title: 판매보증·리콜 충당부채
+            potential_risk: 배터리 결함·화재로 리콜이 생길 때 비용 분담 비율과 충당부채 추정의 완전성에 대한 확인 필요성이 존재
+            accounts: [판매보증충당부채, 매출원가, 우발부채 주석]
+            assertions: [완전성, 평가와배분, 표시와공시]
+            references: [K-IFRS 제1037호, 감사기준서 540]
+            evidence_docs: [리콜·품질 이슈 현황, 고객과의 비용 분담 합의, 과거 보증 실적과 충당부채 산정 내역]
+            priority: 2
+            questions:
+              - 진행 중이거나 협의 중인 리콜과 비용 분담 비율은?
+              - 보증 충당부채 설정률을 과거 실제 보증 비용과 비교해 보았는가?
+      - trait_id: BAT-CUST
+        name: 소수 완성차 고객 집중
+        stage: 수주·개발
+        detect_keywords: [주요 고객, 고객사, 공급계약, 수주잔고, 완성차]
+        risks:
+          - risk_id: BAT-R6
+            title: 장기공급계약 조건과 손실부담 판단
+            potential_risk: 소수 완성차 고객 집중으로 물량 미달 보상·가격 재협상 조건이 수익과 손실부담계약 판단에 미치는 영향에 대한 확인 필요성이 존재
+            accounts: [매출, 매출채권, 손실부담계약 충당부채]
+            assertions: [발생사실, 정확성, 완전성]
+            references: [K-IFRS 제1115호, K-IFRS 제1037호]
+            evidence_docs: [주요 고객 공급계약, 물량 보장·보상 조항, 고객별 매출과 채권 연령]
+            priority: 2
+            metrics:
+              - name: 매출채권 회전일수
+                kind: days
+                num: receivables
+                den: revenue
+                signal: {threshold: 15, direction: up}
+                question: "매출채권 회전일수가 {prev}에서 {cur}로 늘었다. 회수가 늦어진 고객과 결제조건 변경 여부는?"
+            questions:
+              - 고객이 약정 물량을 사지 못할 때의 보상 조항과 당기 발생액은?
+              - 수익성이 낮은 차종 공급계약에 손실부담계약 검토를 했는가?
+
+  steel:
+    name: 철강업
+    group: 제조
+    review: {status: draft, note: "2026-11 초안 — 감사인 검토 전"}
+    summary: "철광석·원료탄을 녹여 쇳물을 만들고 강판으로 가공하는 대규모 장치산업. 원료 가격 변동, 재고 평가, 설비 손상과 탄소 규제가 핵심이다"
+    ksic_prefixes: ["241", "242", "243"]
+    detect_keywords: [철강, 열연, 냉연, 후판, 고로, 전기로, 조강, 철광석, 원료탄, 강판]
+    profile:
+      business_model:
+        - 철광석·원료탄을 장기계약과 현물로 수입해 고로·전기로에서 쇳물과 반제품(슬래브)을 만든다
+        - 열연·냉연·후판 등으로 압연해 자동차·조선·건설·가전 고객에 판매하고 수출 비중이 높다
+        - 판매가격은 원료 가격과 수요(중국 공급량)에 따라 분기·월 단위로 협상된다
+      value_chain: [원료 조달, 제선·제강, 압연·가공, 판매·수출, 설비 유지·탄소 대응]
+      stakeholders: [해외 광산·원료 공급사, 자동차·조선·건설 고객사, 유통 대리점, 환경 규제기관, 금융기관]
+      stage_info:
+        원료 조달:
+          icon: ship
+          do: "철광석·원료탄을 해외에서 장기계약과 현물로 들여온다"
+          money: "회사 → 광산·트레이더: 원료 대금(달러)"
+          books: "재고자산(원료), 매입채무, 외화환산"
+        제선·제강:
+          icon: furnace
+          do: "고로·전기로에서 쇳물을 만들고 불순물을 제거해 슬래브로 굳힌다"
+          money: "회사 → 에너지·설비: 전력·연료비, 설비투자"
+          books: "유형자산(고로·전기로), 감가상각비, 재공품, 배출부채"
+        압연·가공:
+          icon: coil
+          do: "슬래브를 눌러 열연·냉연·후판 같은 제품으로 만든다"
+          money: "가공비가 제품 원가에 쌓인다"
+          books: "제품 재고, 원가계산(결합원가·부산물)"
+        판매·수출:
+          icon: sell
+          do: "자동차·조선사와 분기 단위로 가격을 정해 공급하고 수출한다"
+          money: "고객 → 회사: 판매대금(원화·외화), 판가 소급 정산"
+          books: "매출·매출채권, 판가 조정 부채, 외화환산"
+        설비 유지·탄소 대응:
+          icon: repair
+          do: "고로 개수와 정기 보수를 하고 탄소배출권을 관리한다"
+          money: "회사 → 정부·시장: 배출권 구입, 보수 비용"
+          books: "배출권·배출부채, 수선비, 복구충당부채"
+    traits:
+      - trait_id: STL-RAW
+        name: 원료 가격 변동과 재고 평가
+        stage: 원료 조달
+        detect_keywords: [철광석, 원료탄, 원료 가격, 재고평가, 순실현가능가치, 스프레드]
+        risks:
+          - risk_id: STL-R1
+            title: 원료·제품 재고의 순실현가능가치
+            potential_risk: 원료 가격과 제품 판가의 차이(스프레드)가 줄어들 때 고가에 들여온 원료·제품 재고의 순실현가능가치 평가에 대한 확인 필요성이 존재
+            accounts: [재고자산, 재고자산평가손실, 매출원가]
+            assertions: [평가와배분, 실재성]
+            references: [K-IFRS 제1002호, 감사기준서 501]
+            evidence_docs: [품목별 재고 수불부, 기말 후 판매가격 자료, 순실현가능가치 산정표]
+            priority: 1
+            metrics:
+              - name: 재고자산 회전일수
+                kind: days
+                num: inventory
+                den: cogs
+                signal: {threshold: 15, direction: up}
+                question: "재고자산 회전일수가 {prev}에서 {cur}로 늘었다. 늘어난 재고의 품목과 판가 하락이 평가에 반영됐는지?"
+            questions:
+              - 판가 하락이 예상되는 제품의 순실현가능가치를 어떤 가격 자료로 산정했는가?
+              - 해상 운송 중인 원료의 소유권 이전 시점과 재고 계상 기준은?
+      - trait_id: STL-CAPEX
+        name: 대규모 고정설비와 손상
+        stage: 제선·제강
+        detect_keywords: [고로, 전기로, 설비투자, 가동률, 개수, 생산능력]
+        risks:
+          - risk_id: STL-R2
+            title: 설비 손상과 고로 개수 자본화
+            potential_risk: 수요 둔화와 탄소 규제로 수익성이 낮아진 설비의 손상 징후와 대규모 개수 비용의 자본화 판단에 대한 확인 필요성이 존재
+            accounts: [유형자산, 손상차손, 감가상각비, 수선비]
+            assertions: [평가와배분, 실재성, 표시와공시]
+            references: [K-IFRS 제1016호, K-IFRS 제1036호, 감사기준서 540]
+            evidence_docs: [설비별 가동률, 개수 공사 내역, 현금창출단위 손상검토]
+            priority: 1
+            metrics:
+              - name: 유형자산 증가율 − 매출 증가율
+                kind: growth_gap
+                num: ppe
+                den: revenue
+                signal: {threshold: 10, direction: up}
+                question: "{cur_year}년 유형자산 증가율이 매출 증가율보다 {cur} 높다. 신규·개수 설비의 가동 계획과 손상검토 가정은?"
+            questions:
+              - 가동을 멈추거나 줄인 설비가 있는가? 손상검토의 판가·스프레드 가정은 무엇인가?
+              - 고로 개수 비용 중 자본화한 부분과 비용 처리한 부분의 구분 기준은?
+      - trait_id: STL-PRICE
+        name: 분기 판가 협상과 소급 정산
+        stage: 판매·수출
+        detect_keywords: [판가, 가격 협상, 소급, 수출, 자동차강판, 조선용 후판]
+        risks:
+          - risk_id: STL-R3
+            title: 미확정 판가(소급 정산)의 매출 반영
+            potential_risk: 분기 판가 협상이 기말까지 끝나지 않아 소급 정산되는 금액(변동대가)의 추정과 기간귀속에 대한 확인 필요성이 존재
+            accounts: [매출, 환불부채·미지급금, 매출채권]
+            assertions: [정확성, 기간귀속, 완전성]
+            references: [K-IFRS 제1115호]
+            evidence_docs: [주요 고객별 판가 협상 현황, 기말 후 확정 판가, 변동대가 추정 내역]
+            priority: 2
+            questions:
+              - 기말 현재 판가가 확정되지 않은 고객과 물량은? 추정 판가는 어떤 근거로 정했는가?
+              - 수출 거래의 인도조건(인코텀즈)별 수익인식 시점은?
+      - trait_id: STL-CARBON
+        name: 탄소배출권
+        stage: 설비 유지·탄소 대응
+        detect_keywords: [배출권, 탄소, 온실가스, CBAM, 배출부채]
+        risks:
+          - risk_id: STL-R4
+            title: 배출권과 배출부채의 측정
+            potential_risk: 무상할당량을 넘는 배출에 대한 배출부채 측정과 보유 배출권의 평가·표시에 대한 확인 필요성이 존재
+            accounts: [배출권(무형자산), 배출부채, 매출원가]
+            assertions: [완전성, 평가와배분, 표시와공시]
+            references: [K-IFRS 제1037호, K-IFRS 제1038호]
+            evidence_docs: [연도별 배출량 명세서, 무상할당 내역, 배출권 거래 내역]
+            priority: 3
+            questions:
+              - 당기 배출량이 무상할당량을 넘었는가? 부족분은 어떤 가격으로 부채를 측정했는가?
+
+  automobile:
+    name: 자동차·부품 제조업
+    group: 제조
+    review: {status: draft, note: "2026-11 초안 — 감사인 검토 전"}
+    summary: "수천 개 부품을 조달해 완성차를 조립·판매하고 할부금융·A/S까지 이어지는 산업. 판매보증·리콜, 판매촉진비, 해외 법인과 부품 단가 소급이 핵심이다"
+    ksic_prefixes: ["30"]
+    detect_keywords: [완성차, 자동차, 차량, 부품, 판매대수, 딜러, 리콜, 전기차, 모듈]
+    profile:
+      business_model:
+        - 완성차 회사는 부품사에서 부품을 조달해 조립하고, 국내 대리점·해외 판매법인을 통해 판매한다
+        - 부품사는 완성차 차종별로 수년간 공급하며 단가는 연례 인하·원자재 연동으로 소급 정산된다
+        - 판매 후에도 보증수리·리콜과 할부·리스 금융에서 수익과 비용이 이어진다
+      value_chain: [차량 개발, 부품 조달, 생산·조립, 판매·금융, 보증·리콜]
+      stakeholders: [부품 협력사, 국내외 딜러·판매법인, 할부금융사(캡티브), 노동조합, 각국 안전·환경 규제기관]
+      stage_info:
+        차량 개발:
+          icon: design
+          do: "신차·플랫폼을 수년간 개발하고 금형·설비를 준비한다"
+          money: "회사 → 연구인력·협력사: 개발비, 금형비"
+          books: "개발비(무형자산) 자본화, 연구비, 금형(유형자산)"
+        부품 조달:
+          icon: truck
+          do: "협력사에서 부품을 들여오고 단가를 연례 협상·소급 정산한다"
+          money: "회사 → 협력사: 부품 대금, 단가 소급분"
+          books: "재고자산, 매입채무, 단가 소급 미지급금"
+        생산·조립:
+          icon: car
+          do: "공장에서 차체를 만들고 도장·조립해 완성차를 만든다"
+          money: "인건비·설비비가 차량 원가에 쌓인다"
+          books: "재공품·제품, 유형자산, 감가상각비"
+        판매·금융:
+          icon: sell
+          do: "딜러·판매법인으로 판매하고 할부·리스와 판촉 인센티브를 준다"
+          money: "고객·딜러 → 회사: 판매대금 / 회사 → 딜러: 판매장려금"
+          books: "매출(판촉비 차감), 매출채권, 금융채권"
+        보증·리콜:
+          icon: repair
+          do: "보증기간 동안 무상수리를 하고 결함 시 리콜한다"
+          money: "회사 → 고객·정비망: 보증수리비, 리콜 비용"
+          books: "판매보증충당부채, 우발부채 주석"
+    traits:
+      - trait_id: AUT-WARRANTY
+        name: 판매보증과 리콜
+        stage: 보증·리콜
+        detect_keywords: [리콜, 판매보증, 품질비용, 무상수리, 보증충당]
+        risks:
+          - risk_id: AUT-R1
+            title: 판매보증충당부채와 리콜 비용 추정
+            potential_risk: 보증수리 실적과 진행 중인 리콜·품질 이슈를 반영한 판매보증충당부채 추정의 완전성과 정확성에 대한 확인 필요성이 존재
+            accounts: [판매보증충당부채, 매출원가, 우발부채 주석]
+            assertions: [완전성, 평가와배분, 표시와공시]
+            references: [K-IFRS 제1037호, 감사기준서 540]
+            evidence_docs: [차종별 보증수리 실적, 리콜 진행 현황, 충당부채 설정률 산정 내역]
+            priority: 1
+            questions:
+              - 진행 중이거나 검토 중인 리콜과 예상 비용은? 협력사 구상 금액은 별도로 인식했는가?
+              - 충당부채 설정률을 최근 3년 실제 보증비용과 비교해 보았는가?
+      - trait_id: AUT-INCENT
+        name: 판매촉진 인센티브
+        stage: 판매·금융
+        detect_keywords: [판매촉진, 인센티브, 판매장려금, 딜러, 할부, 리스]
+        risks:
+          - risk_id: AUT-R2
+            title: 판매장려금·할부 지원의 매출 차감
+            potential_risk: 딜러 판매장려금·무이자 할부 지원 등 고객에게 지급하는 대가의 매출 차감과 기말 미지급분 추정에 대한 확인 필요성이 존재
+            accounts: [매출, 미지급금(판촉), 판매비]
+            assertions: [정확성, 기간귀속, 표시와공시]
+            references: [K-IFRS 제1115호]
+            evidence_docs: [딜러 인센티브 정책, 기말 미지급 판촉비 산정 내역, 할부 지원 약정]
+            priority: 1
+            metrics:
+              - name: 매출채권 회전일수
+                kind: days
+                num: receivables
+                den: revenue
+                signal: {threshold: 15, direction: up}
+                question: "매출채권 회전일수가 {prev}에서 {cur}로 늘었다. 딜러·판매법인 결제조건이 바뀌었는가?"
+            questions:
+              - 딜러에 주는 판매장려금은 매출에서 차감하는가, 판매비로 처리하는가? 그 판단 근거는?
+              - 기말에 아직 지급하지 않은 판촉 인센티브는 어떻게 추정했는가?
+      - trait_id: AUT-PRICE
+        name: 부품 단가 소급 정산
+        stage: 부품 조달
+        detect_keywords: [단가, 소급, 원자재 연동, 협력사, 납품단가]
+        risks:
+          - risk_id: AUT-R3
+            title: 단가 소급분의 기간귀속
+            potential_risk: 연례 단가 인하·원자재 연동으로 기말 이후 확정되는 소급 정산분을 매출·매출원가에 반영하는 기간귀속에 대한 확인 필요성이 존재
+            accounts: [매출원가, 매출, 미지급금·미수금]
+            assertions: [기간귀속, 정확성, 완전성]
+            references: [K-IFRS 제1115호, K-IFRS 제1002호]
+            evidence_docs: [단가 합의서, 기말 후 소급 정산 내역, 원자재 연동 산식]
+            priority: 2
+            questions:
+              - 기말 현재 협상 중인 단가 인하·소급분은 얼마이고 어떻게 추정했는가?
+      - trait_id: AUT-DEV
+        name: 신차 개발비 자본화
+        stage: 차량 개발
+        detect_keywords: [개발비, 연구개발, 신차, 플랫폼, 금형]
+        risks:
+          - risk_id: AUT-R4
+            title: 개발비 자본화 요건과 손상
+            potential_risk: 신차·플랫폼 개발비의 자본화 요건 충족 판단과 판매 부진 차종 개발비의 손상에 대한 확인 필요성이 존재
+            accounts: [개발비(무형자산), 무형자산손상차손, 연구개발비]
+            assertions: [실재성, 평가와배분]
+            references: [K-IFRS 제1038호, K-IFRS 제1036호]
+            evidence_docs: [프로젝트별 개발비 명세, 자본화 개시 판단 자료, 차종별 판매 계획]
+            priority: 2
+            questions:
+              - 개발비 자본화를 시작하는 시점(기술적 실현가능성)은 무엇으로 판단하는가?
+              - 판매 계획보다 부진한 차종의 개발비·금형 손상검토를 했는가?
+
+  chemical:
+    name: 석유화학·정유업
+    group: 제조
+    review: {status: draft, note: "2026-11 초안 — 감사인 검토 전"}
+    summary: "원유·나프타를 정제·분해해 연료와 기초유분, 합성수지를 만드는 장치산업. 유가 변동에 따른 재고 평가, 파생상품, 설비 손상이 핵심이다"
+    ksic_prefixes: ["19", "20"]
+    detect_keywords: [나프타, 에틸렌, 정유, 원유, 석유화학, 합성수지, 스프레드, 정제마진, 크래커]
+    profile:
+      business_model:
+        - 원유·나프타를 수입해 정제·분해(크래커)하고 휘발유·경유와 에틸렌·프로필렌 등을 만든다
+        - 기초유분을 다시 합성수지·화학제품으로 가공해 국내외 고객에 판매한다
+        - 이익은 원료와 제품 가격 차이(정제마진·스프레드)에 좌우되고 유가 변동을 파생상품으로 헤지한다
+      value_chain: [원료 도입, 정제·분해, 제품 생산, 판매·수출, 정기보수·환경]
+      stakeholders: [산유국·원료 트레이더, 석유제품·화학 고객사, 해운사, 환경·안전 규제기관, 금융기관]
+      stage_info:
+        원료 도입:
+          icon: ship
+          do: "원유·나프타를 장기계약과 현물로 수입한다"
+          money: "회사 → 산유국·트레이더: 원료 대금(달러)"
+          books: "재고자산(원료), 매입채무, 외화환산·파생상품"
+        정제·분해:
+          icon: flask
+          do: "증류·분해 공정에서 원료를 여러 제품으로 나눈다"
+          money: "연료·전력비와 설비 운영비가 든다"
+          books: "결합원가 배분, 유형자산, 감가상각비"
+        제품 생산:
+          icon: package
+          do: "기초유분을 합성수지·화학제품으로 가공한다"
+          money: "가공비가 제품 원가에 쌓인다"
+          books: "제품·재공품, 원가계산"
+        판매·수출:
+          icon: sell
+          do: "국제 가격 지표에 연동해 판매하고 수출한다"
+          money: "고객 → 회사: 판매대금(외화)"
+          books: "매출·매출채권, 외화환산, 파생상품 손익"
+        정기보수·환경:
+          icon: repair
+          do: "정기적으로 공정을 멈추고 보수하며 환경·안전 규제에 대응한다"
+          money: "회사 → 보수 업체·정부: 보수비, 환경 비용"
+          books: "수선비·자본적 지출, 복구충당부채, 배출부채"
+    traits:
+      - trait_id: CHM-INV
+        name: 유가 변동과 재고 평가
+        stage: 원료 도입
+        detect_keywords: [유가, 재고평가, 래깅, 원유 가격, 순실현가능가치]
+        risks:
+          - risk_id: CHM-R1
+            title: 유가 하락기 재고 평가와 원가 흐름
+            potential_risk: 유가 급락 시 고가 원료·제품 재고의 순실현가능가치 평가와 원가 흐름 가정에 따른 손익 변동(래깅 효과)에 대한 확인 필요성이 존재
+            accounts: [재고자산, 재고자산평가손실, 매출원가]
+            assertions: [평가와배분, 실재성]
+            references: [K-IFRS 제1002호, 감사기준서 501]
+            evidence_docs: [유종·제품별 재고 수불, 기말 후 판매가격, 순실현가능가치 산정표, 탱크 재고 실사 결과]
+            priority: 1
+            metrics:
+              - name: 재고자산 회전일수
+                kind: days
+                num: inventory
+                den: cogs
+                signal: {threshold: 10, direction: up}
+                question: "재고자산 회전일수가 {prev}에서 {cur}로 변동했다. 유종·제품별 재고 증감과 평가손실 반영 여부는?"
+            questions:
+              - 탱크·운송 중 재고의 수량은 어떻게 확인했는가(실사·검정 보고서)?
+              - 유가 하락분을 순실현가능가치에 어떻게 반영했는가?
+      - trait_id: CHM-DERIV
+        name: 유가·환율 파생상품 헤지
+        stage: 판매·수출
+        detect_keywords: [파생상품, 헤지, 선물, 스왑, 위험회피]
+        risks:
+          - risk_id: CHM-R2
+            title: 파생상품 공정가치와 위험회피회계
+            potential_risk: 원유·제품 스왑과 통화선도의 공정가치 측정, 위험회피회계 적용 요건과 손익 표시에 대한 확인 필요성이 존재
+            accounts: [파생상품자산·부채, 파생상품손익, 기타포괄손익]
+            assertions: [평가와배분, 표시와공시, 실재성]
+            references: [K-IFRS 제1109호, K-IFRS 제1113호, 감사기준서 540]
+            evidence_docs: [파생상품 계약 명세, 거래상대방 잔액 확인, 위험회피 문서화, 공정가치 평가 보고서]
+            priority: 2
+            questions:
+              - 위험회피회계를 적용하는 거래와 그 효과성 평가 방법은?
+      - trait_id: CHM-SALES
+        name: 국제 가격 연동 판매
+        stage: 판매·수출
+        detect_keywords: [수출, 가격 연동, 싱가포르, 판가, 공급계약]
+        risks:
+          - risk_id: CHM-R3
+            title: 가격 미확정 판매의 수익 측정
+            potential_risk: 선적 이후 국제 가격 공시 평균으로 확정되는 판매(가격 미확정 계약)의 수익 측정과 기간귀속에 대한 확인 필요성이 존재
+            accounts: [매출, 매출채권, 내재파생상품]
+            assertions: [정확성, 기간귀속]
+            references: [K-IFRS 제1115호, K-IFRS 제1109호]
+            evidence_docs: [주요 수출 계약 가격 조항, 선적 서류, 기말 후 가격 확정 내역]
+            priority: 2
+            questions:
+              - 선적 후 가격이 확정되는 거래는 기말에 어떤 가격으로 매출을 측정했는가?
+      - trait_id: CHM-ASSET
+        name: 설비 손상과 구조조정
+        stage: 정제·분해
+        detect_keywords: [가동률, 공급과잉, 구조조정, 감산, 설비 매각, 손상]
+        risks:
+          - risk_id: CHM-R4
+            title: 공급과잉 설비의 손상
+            potential_risk: 중국 증설에 따른 공급과잉으로 수익성이 떨어진 공정의 손상 징후와 사용가치 가정에 대한 확인 필요성이 존재
+            accounts: [유형자산, 손상차손]
+            assertions: [평가와배분, 표시와공시]
+            references: [K-IFRS 제1036호, 감사기준서 540]
+            evidence_docs: [공정별 가동률·수익성, 현금창출단위 손상검토, 구조조정 계획]
+            priority: 1
+            questions:
+              - 감산·가동 중단한 공정과 그 손상검토 결과는? 스프레드 가정은 외부 전망과 맞는가?
+
+  pharma_bio:
+    name: 제약·바이오
+    group: 헬스케어
+    review: {status: draft, note: "2026-11 초안 — 감사인 검토 전"}
+    summary: "오랜 연구·임상을 거쳐 허가받은 의약품을 팔거나 기술을 이전해 수익을 내는 산업. 개발비 자본화, 기술이전 수익, 리베이트·반품이 핵심이다"
+    ksic_prefixes: ["21", "701"]
+    detect_keywords: [임상, 신약, 의약품, 바이오, 기술이전, 품목허가, 파이프라인, 바이오시밀러, CDMO]
+    profile:
+      business_model:
+        - 신약 후보물질을 연구하고 임상 1~3상을 거쳐 품목허가를 받아 판매한다
+        - 개발 중인 물질을 글로벌 제약사에 기술이전하고 계약금·마일스톤·로열티를 받는다
+        - 병·의원·약국으로 도매상을 거쳐 유통하며 약가는 정부가 정한다
+      value_chain: [연구·임상, 인허가, 생산, 유통·판매, 기술이전·로열티]
+      stakeholders: [병·의원·약국, 의약품 도매상, 식약처·건강보험심사평가원, 글로벌 제약사(기술이전 상대), 임상시험수탁기관(CRO)]
+      stage_info:
+        연구·임상:
+          icon: flask
+          do: "후보물질을 찾고 사람 대상 임상시험을 단계별로 진행한다"
+          money: "회사 → CRO·병원: 임상 비용"
+          books: "연구비·경상개발비, 개발비 자본화 판단"
+        인허가:
+          icon: bid
+          do: "식약처·FDA에 품목허가를 신청하고 약가를 협상한다"
+          money: "허가 전에는 매출 없이 비용만 나간다"
+          books: "자본화 요건(허가 가능성) 판단의 기준점"
+        생산:
+          icon: pill
+          do: "GMP 공장에서 의약품을 생산하거나 위탁생산(CDMO)한다"
+          money: "회사 → 원료사: 원료의약품 대금"
+          books: "재고자산(유효기간 관리), 유형자산"
+        유통·판매:
+          icon: truck
+          do: "도매상을 거쳐 병·의원·약국에 공급하고 판촉한다"
+          money: "도매상 → 회사: 판매대금 / 회사 → 거래처: 할인·반품 정산"
+          books: "매출(반품·할인 차감), 매출채권, 판매촉진비"
+        기술이전·로열티:
+          icon: royalty
+          do: "개발 중인 물질의 권리를 글로벌 제약사에 넘기고 단계별로 대가를 받는다"
+          money: "상대 제약사 → 회사: 계약금·마일스톤·로열티"
+          books: "라이선스 수익, 계약부채, 반환 조건"
+    traits:
+      - trait_id: PHA-DEV
+        name: 임상 단계 개발비
+        stage: 연구·임상
+        detect_keywords: [임상, 개발비, 자본화, 파이프라인, 후보물질]
+        risks:
+          - risk_id: PHA-R1
+            title: 개발비 자본화 요건과 손상
+            potential_risk: 임상 단계별 개발비 자본화 요건(기술적 실현가능성) 충족 판단과 임상 실패·중단 품목 개발비의 손상에 대한 확인 필요성이 존재
+            accounts: [개발비(무형자산), 경상개발비, 무형자산손상차손]
+            assertions: [실재성, 평가와배분, 표시와공시]
+            references: [K-IFRS 제1038호, K-IFRS 제1036호, 감사기준서 540]
+            evidence_docs: [파이프라인별 임상 단계와 자본화 내역, 임상 결과 보고, 손상검토]
+            priority: 1
+            questions:
+              - 어느 임상 단계부터 자본화하는가? 업계 관행(통상 3상 이후·허가 신청)과 다르다면 근거는?
+              - 임상을 중단하거나 결과가 나빴던 품목의 개발비는 어떻게 처리했는가?
+      - trait_id: PHA-LICENSE
+        name: 기술이전 계약
+        stage: 기술이전·로열티
+        detect_keywords: [기술이전, 라이선스, 마일스톤, 계약금, 로열티, 반환]
+        risks:
+          - risk_id: PHA-R2
+            title: 기술이전 수익의 인식 시점과 측정
+            potential_risk: 기술이전 계약금·마일스톤의 수행의무 식별, 반환 조건이 있는 대가와 변동대가 추정에 따른 수익인식 시점에 대한 확인 필요성이 존재
+            accounts: [라이선스 수익, 계약부채, 매출채권]
+            assertions: [발생사실, 기간귀속, 정확성]
+            references: [K-IFRS 제1115호]
+            evidence_docs: [기술이전 계약서, 마일스톤 달성 근거, 반환 조건 검토 메모]
+            priority: 1
+            questions:
+              - 계약금에 반환 조건이 있는가? 한 시점과 기간 중 어떤 방식으로 수익을 인식했는가?
+              - 기말 전후 달성된 마일스톤의 근거 자료(상대방 통지 등)는?
+      - trait_id: PHA-RETURN
+        name: 반품·할인과 리베이트
+        stage: 유통·판매
+        detect_keywords: [반품, 할인, 판매촉진, 약가, 도매상, 리베이트]
+        risks:
+          - risk_id: PHA-R3
+            title: 반품·할인 추정과 판매촉진비
+            potential_risk: 유효기간 경과·약가 인하에 따른 반품과 할인(변동대가) 추정, 판매촉진비 지출의 적정성(불법 리베이트 위험)에 대한 확인 필요성이 존재
+            accounts: [매출, 환불부채, 판매촉진비, 재고자산]
+            assertions: [정확성, 발생사실, 완전성]
+            references: [K-IFRS 제1115호, 감사기준서 240, 감사기준서 250]
+            evidence_docs: [반품 실적과 환불부채 산정, 약가 인하 내역, 판매촉진비 집행 증빙]
+            priority: 2
+            metrics:
+              - name: 매출채권 회전일수
+                kind: days
+                num: receivables
+                den: revenue
+                signal: {threshold: 20, direction: up}
+                question: "매출채권 회전일수가 {prev}에서 {cur}로 늘었다. 도매상 결제조건 변화와 기말 밀어내기 매출은 없는가?"
+            questions:
+              - 반품 충당(환불부채) 설정률은 과거 반품 실적과 맞는가?
+              - 판매촉진비의 집행 대상과 증빙은 어떻게 관리하는가?
+
+  telecom:
+    name: 통신업
+    group: 정보통신
+    review: {status: draft, note: "2026-11 초안 — 감사인 검토 전"}
+    summary: "주파수와 통신망에 크게 투자하고 가입자에게 매달 요금을 받는 산업. 결합상품 수익 배분, 가입자 획득비용, 주파수·망 자산이 핵심이다"
+    ksic_prefixes: ["612"]
+    detect_keywords: [가입자, 이동통신, 5G, 주파수, ARPU, 무선, 유선, 초고속인터넷, IPTV]
+    profile:
+      business_model:
+        - 정부에서 주파수를 할당받고 기지국·유선망을 깔아 이동통신·인터넷·IPTV 서비스를 판다
+        - 단말기 할인과 약정으로 가입자를 모으고 매달 요금을 받는다
+        - 통신을 기반으로 미디어·클라우드·데이터센터 등 신사업으로 넓힌다
+      value_chain: [망 투자, 가입자 모집, 서비스 제공·과금, 신사업·콘텐츠]
+      stakeholders: [가입자, 대리점·판매점, 단말기 제조사, 과학기술정보통신부·방송통신위원회, 콘텐츠 사업자]
+      stage_info:
+        망 투자:
+          icon: tower
+          do: "주파수를 할당받고 기지국·광케이블 망을 구축한다"
+          money: "회사 → 정부·장비사: 주파수 대가, 설비투자"
+          books: "주파수이용권(무형자산), 유형자산, 감가상각·상각비"
+        가입자 모집:
+          icon: contract
+          do: "대리점에서 단말 할인과 약정으로 가입자를 모은다"
+          money: "회사 → 대리점: 판매수수료 / 고객 → 회사: 단말 대금(할부)"
+          books: "계약원가(가입자 획득비용) 자산화, 장기 할부채권"
+        서비스 제공·과금:
+          icon: invoice
+          do: "통신 서비스를 제공하고 매달 요금을 청구한다"
+          money: "가입자 → 회사: 월 요금"
+          books: "매출(요금·결합할인 배분), 매출채권, 대손"
+        신사업·콘텐츠:
+          icon: code
+          do: "IPTV·클라우드·데이터센터 등 신사업에 투자한다"
+          money: "회사 → 콘텐츠사·설비: 콘텐츠 비용, 데이터센터 투자"
+          books: "콘텐츠 무형자산, 관계기업 투자, 손상"
+    traits:
+      - trait_id: TEL-BUNDLE
+        name: 단말·요금 결합 판매
+        stage: 서비스 제공·과금
+        detect_keywords: [결합, 약정, 단말기, 할부, 요금할인, 선택약정]
+        risks:
+          - risk_id: TEL-R1
+            title: 결합상품 거래가격 배분
+            potential_risk: 단말기와 통신 서비스를 묶어 할인 판매할 때 수행의무별 거래가격 배분과 할인 효과의 수익인식 시점에 대한 확인 필요성이 존재
+            accounts: [매출(서비스·단말), 계약자산·계약부채]
+            assertions: [정확성, 기간귀속, 표시와공시]
+            references: [K-IFRS 제1115호, 감사기준서 315]
+            evidence_docs: [요금제·결합상품별 배분 정책, 빌링 시스템 IT 통제 평가, 계약자산 계산 내역]
+            priority: 1
+            questions:
+              - 단말 할인과 결합 할인을 수행의무별로 어떻게 배분하는가? 개별 판매가격은 어떻게 정했는가?
+              - 빌링 시스템의 요금 계산 로직 변경은 어떻게 통제되는가?
+      - trait_id: TEL-SAC
+        name: 가입자 획득비용
+        stage: 가입자 모집
+        detect_keywords: [판매수수료, 마케팅, 가입자 유치, 계약원가, 지원금]
+        risks:
+          - risk_id: TEL-R2
+            title: 계약원가 자산화와 상각
+            potential_risk: 대리점 판매수수료 등 가입자 획득 증분원가의 자산화 범위와 상각 기간(예상 가입 기간) 추정에 대한 확인 필요성이 존재
+            accounts: [계약원가(선급비용), 판매수수료, 상각비]
+            assertions: [평가와배분, 실재성, 정확성]
+            references: [K-IFRS 제1115호, 감사기준서 540]
+            evidence_docs: [수수료 정책, 자산화 대상 수수료 명세, 가입자 이탈률 자료]
+            priority: 2
+            questions:
+              - 자산화하는 수수료와 바로 비용 처리하는 수수료의 구분 기준은?
+              - 상각 기간은 실제 가입 유지 기간과 맞는가?
+      - trait_id: TEL-NET
+        name: 주파수·망 투자
+        stage: 망 투자
+        detect_keywords: [주파수, 기지국, 설비투자, CAPEX, 망 구축, 5G]
+        risks:
+          - risk_id: TEL-R3
+            title: 주파수이용권·망 설비의 상각과 손상
+            potential_risk: 주파수이용권 상각 개시 시점과 내용연수, 기술 전환(3G·LTE 종료)에 따른 망 설비 손상과 철거 비용에 대한 확인 필요성이 존재
+            accounts: [주파수이용권, 유형자산, 감가상각비, 복구충당부채]
+            assertions: [평가와배분, 실재성, 완전성]
+            references: [K-IFRS 제1038호, K-IFRS 제1016호, K-IFRS 제1036호]
+            evidence_docs: [주파수 할당 조건, 설비 대장과 실사, 기술 전환 계획]
+            priority: 2
+            metrics:
+              - name: 유형자산 증가율 − 매출 증가율
+                kind: growth_gap
+                num: ppe
+                den: revenue
+                signal: {threshold: 8, direction: up}
+                question: "{cur_year}년 유형자산 증가율이 매출 증가율보다 {cur} 높다. 망 투자 계획과 회수 가정은?"
+            questions:
+              - 서비스를 종료할 망 설비의 잔존 장부금액과 철거 비용은?
+
+  banking:
+    name: 은행·금융지주
+    group: 금융
+    review: {status: draft, note: "2026-11 초안 — 감사인 검토 전. 은행 재무제표는 일반 기업 지표를 쓰지 않음"}
+    summary: "예금과 채권으로 자금을 모아 대출·투자로 운용하고 이자와 수수료를 버는 산업. 대손충당금(기대신용손실), 금융상품 공정가치, IT 통제가 핵심이다"
+    ksic_prefixes: ["641"]   # 지주회사(64992)는 금융·비금융이 섞여 있어 본문으로 판별 (pipeline.resolve_industry)
+    detect_keywords: [대출채권, 예수부채, 순이자마진, NIM, 기대신용손실, 고정이하여신, BIS, 자기자본비율, 여신]
+    profile:
+      business_model:
+        - 예금·채권 발행으로 자금을 조달하고 기업·가계에 대출해 이자 차이(예대마진)를 번다
+        - 유가증권 투자와 외환·파생상품 거래, 펀드·방카슈랑스 판매 수수료로 비이자이익을 낸다
+        - 자본적정성(BIS 비율)과 건전성 규제 안에서 자산을 늘린다
+      value_chain: [자금 조달, 여신 심사·실행, 자금 운용·투자, 이자·수수료 수익, 리스크 관리·충당금]
+      stakeholders: [예금자, 대출 고객(기업·가계), 금융감독원·한국은행, 신용평가사, 지주사·계열사]
+      stage_info:
+        자금 조달:
+          icon: bank
+          do: "예금을 받고 은행채를 발행해 자금을 모은다"
+          money: "예금자 → 은행: 예금 / 은행 → 예금자: 이자"
+          books: "예수부채, 차입부채·사채, 이자비용"
+        여신 심사·실행:
+          icon: contract
+          do: "차주의 신용을 심사하고 대출을 실행한다"
+          money: "은행 → 차주: 대출금"
+          books: "대출채권(상각후원가), 이연대출부대수익·비용"
+        자금 운용·투자:
+          icon: royalty
+          do: "남는 자금을 채권·주식·파생상품에 투자한다"
+          money: "은행 → 시장: 유가증권 매입"
+          books: "당기손익·기타포괄손익 공정가치 측정 금융자산, 파생상품"
+        이자·수수료 수익:
+          icon: invoice
+          do: "대출 이자와 각종 수수료를 받는다"
+          money: "차주·고객 → 은행: 이자, 수수료"
+          books: "이자수익(유효이자율), 수수료수익"
+        리스크 관리·충당금:
+          icon: test
+          do: "부실 가능성을 평가해 충당금을 쌓고 자본비율을 관리한다"
+          money: "부실 대출은 상각·매각으로 정리한다"
+          books: "대손충당금(기대신용손실), 대손상각비"
+    traits:
+      - trait_id: BNK-ECL
+        name: 기대신용손실 충당금
+        stage: 리스크 관리·충당금
+        detect_keywords: [기대신용손실, 대손충당금, 고정이하여신, 연체율, 부실채권, 미래전망정보]
+        risks:
+          - risk_id: BNK-R1
+            title: 대출채권 기대신용손실 측정
+            potential_risk: 신용위험 단계 구분(Stage 1~3), 부도율·부도시손실률 모형과 미래전망정보·경영진 조정(오버레이)에 따른 충당금 추정의 불확실성에 대한 확인 필요성이 존재
+            accounts: [대출채권, 대손충당금, 대손상각비]
+            assertions: [평가와배분, 완전성, 표시와공시]
+            references: [K-IFRS 제1109호, 감사기준서 540, 감사기준서 315]
+            evidence_docs: [기대신용손실 모형 문서·검증 보고서, 단계 구분 기준과 이동 내역, 경영진 조정 근거, 개별평가 대상 차주 명세]
+            priority: 1
+            questions:
+              - 신용위험이 유의적으로 증가했다고 보는 기준(Stage 2 이동)은 무엇인가?
+              - 미래전망정보 시나리오와 가중치, 경영진 조정(오버레이)의 근거는?
+              - 부동산 PF 등 집중 업종의 개별평가 결과는?
+      - trait_id: BNK-FV
+        name: 공정가치 측정 금융상품
+        stage: 자금 운용·투자
+        detect_keywords: [공정가치, 파생상품, 수준3, 유가증권, 평가모형]
+        risks:
+          - risk_id: BNK-R2
+            title: 수준 3 금융상품 공정가치
+            potential_risk: 시장가격이 없는 비상장 지분·구조화 상품·파생상품의 평가모형과 관측 불가능한 투입변수에 대한 확인 필요성이 존재
+            accounts: [당기손익공정가치측정금융자산, 파생상품자산·부채, 평가손익]
+            assertions: [평가와배분, 표시와공시]
+            references: [K-IFRS 제1113호, K-IFRS 제1109호, 감사기준서 540]
+            evidence_docs: [수준별 공정가치 명세, 외부 평가기관 보고서, 독립 가격검증 결과]
+            priority: 1
+            questions:
+              - 수준 3으로 분류된 상품과 핵심 투입변수(할인율·변동성)의 민감도는?
+      - trait_id: BNK-FEE
+        name: 수수료수익과 IT 통제
+        stage: 이자·수수료 수익
+        detect_keywords: [수수료수익, 방카슈랑스, 신탁, 전산, 계정계, 유효이자율]
+        risks:
+          - risk_id: BNK-R3
+            title: 이자·수수료 수익 계산의 IT 의존
+            potential_risk: 대량 거래가 계정계 시스템에서 자동 계산되므로 유효이자율 적용과 수수료수익 인식(판매 수수료 1115)의 정확성이 IT 일반통제에 의존하는 데 대한 확인 필요성이 존재
+            accounts: [이자수익, 수수료수익, 이연대출부대수익]
+            assertions: [정확성, 발생사실, 완전성]
+            references: [K-IFRS 제1115호, K-IFRS 제1109호, 감사기준서 315]
+            evidence_docs: [계정계 시스템 IT 일반통제 평가, 이자 계산 재계산 표본, 수수료 계약 조건]
+            priority: 2
+            questions:
+              - 이자 계산 로직이나 금리 변경은 누가 승인하고 어떻게 검증하는가?
+              - 펀드·보험 판매 수수료 중 사후 환수 조건이 있는 금액은 어떻게 처리하는가?
+
+  platform:
+    name: 인터넷 플랫폼·소프트웨어
+    group: 정보통신
+    review: {status: draft, note: "2026-11 초안 — 감사인 검토 전"}
+    summary: "앱·포털·게임·소프트웨어로 이용자를 모으고 광고·커머스 수수료·구독·결제로 돈을 버는 산업. 총액/순액 판단, 포인트·충전금, 인수합병과 영업권이 핵심이다"
+    ksic_prefixes: ["582", "62", "631"]
+    detect_keywords: [플랫폼, 이용자, 광고, 커머스, 콘텐츠, 게임, 구독, 클라우드, MAU, 앱]
+    profile:
+      business_model:
+        - 무료 서비스로 이용자를 모으고 광고와 커머스 판매 수수료로 수익을 낸다
+        - 게임·웹툰·음악 등 콘텐츠와 구독, 클라우드·소프트웨어 라이선스를 판다
+        - 간편결제·충전금 등 이용자 돈을 잠시 맡아 두고, 성장을 위해 많은 회사를 인수한다
+      value_chain: [서비스 개발, 이용자 확보, 광고·커머스 수익화, 결제·정산, 콘텐츠·M&A 투자]
+      stakeholders: [이용자, 광고주, 입점 판매자·콘텐츠 제작자, 앱 마켓(구글·애플), 방송통신위원회·공정거래위원회]
+      stage_info:
+        서비스 개발:
+          icon: code
+          do: "앱·플랫폼·게임을 개발하고 운영한다"
+          money: "회사 → 개발 인력·클라우드: 인건비, 서버 비용"
+          books: "인건비·주식보상비용, 개발비 자본화 판단"
+        이용자 확보:
+          icon: store
+          do: "무료 서비스와 마케팅으로 이용자를 늘린다"
+          money: "회사 → 광고 매체: 마케팅비"
+          books: "광고선전비, 포인트·쿠폰 부채"
+        광고·커머스 수익화:
+          icon: brand
+          do: "광고를 팔고 입점 판매자 거래에서 수수료를 받는다"
+          money: "광고주·판매자 → 회사: 광고비, 판매 수수료"
+          books: "매출(총액 또는 순액), 매출채권"
+        결제·정산:
+          icon: invoice
+          do: "이용자 결제·충전금을 받아 두었다가 판매자에게 정산한다"
+          money: "이용자 → 회사 → 판매자: 결제대금(일시 보관)"
+          books: "예수금·선수금(충전금), 미지급금, 고객예치금 관리"
+        콘텐츠·M&A 투자:
+          icon: royalty
+          do: "콘텐츠 IP와 유망 회사를 사들인다"
+          money: "회사 → 피인수회사 주주: 인수 대가"
+          books: "영업권·무형자산, 관계기업투자, 손상"
+    traits:
+      - trait_id: PLT-GROSS
+        name: 중개 거래의 총액·순액
+        stage: 광고·커머스 수익화
+        detect_keywords: [중개, 수수료, 커머스, 입점, 총액, 순액, 거래액, 광고]
+        risks:
+          - risk_id: PLT-R1
+            title: 본인·대리인 판단과 매출 표시
+            potential_risk: 커머스·광고·결제 거래에서 회사가 본인인지 대리인인지에 따라 매출을 총액 또는 순액으로 표시하는 판단과 대량 거래의 정확성에 대한 확인 필요성이 존재
+            accounts: [매출, 매출원가, 매출채권]
+            assertions: [표시와공시, 발생사실, 정확성]
+            references: [K-IFRS 제1115호, 감사기준서 315]
+            evidence_docs: [서비스별 본인·대리인 판단 메모, 거래 데이터와 정산 대사, 매출 시스템 IT 통제]
+            priority: 1
+            metrics:
+              - name: 매출채권 회전일수
+                kind: days
+                num: receivables
+                den: revenue
+                signal: {threshold: 15, direction: up}
+                question: "매출채권 회전일수가 {prev}에서 {cur}로 변동했다. 광고·정산 대행사 회수조건 변화는?"
+            questions:
+              - 서비스별로 회사가 재화·서비스를 통제하는지(본인) 판단한 근거는?
+              - 결제·거래 데이터와 매출 계상액을 어떻게 대사하는가?
+      - trait_id: PLT-POINT
+        name: 포인트·충전금·선불 결제
+        stage: 결제·정산
+        detect_keywords: [포인트, 충전금, 선불, 캐시, 고객예치금, 미사용]
+        risks:
+          - risk_id: PLT-R2
+            title: 충전금·포인트 부채와 미사용분 수익
+            potential_risk: 이용자 충전금·포인트·게임 재화의 부채 완전성과 미사용 예상분(낙전) 수익인식, 이용자 자금의 별도 관리에 대한 확인 필요성이 존재
+            accounts: [선수금·계약부채, 예수금, 매출]
+            assertions: [완전성, 기간귀속, 권리와의무]
+            references: [K-IFRS 제1115호, 전자금융거래법]
+            evidence_docs: [충전·사용·소멸 데이터, 낙전 추정 근거, 이용자 자금 보호(신탁·보증) 현황]
+            priority: 2
+            questions:
+              - 미사용 포인트·충전금의 수익인식 방식과 낙전률 근거는?
+              - 이용자 선불 충전금은 외부 신탁 등으로 보호되는가?
+      - trait_id: PLT-MNA
+        name: 잦은 인수합병과 영업권
+        stage: 콘텐츠·M&A 투자
+        detect_keywords: [인수, 합병, 영업권, 지분 취득, 종속기업, 관계기업, 손상]
+        risks:
+          - risk_id: PLT-R3
+            title: 영업권·무형자산 손상과 사업결합 회계
+            potential_risk: 성장 기대로 높은 가격에 인수한 회사의 영업권·무형자산 손상과 매수가격 배분, 지배력 판단에 대한 확인 필요성이 존재
+            accounts: [영업권, 무형자산, 관계기업투자, 손상차손]
+            assertions: [평가와배분, 표시와공시, 실재성]
+            references: [K-IFRS 제1103호, K-IFRS 제1036호, K-IFRS 제1110호, 감사기준서 540]
+            evidence_docs: [매수가격 배분 보고서, 현금창출단위별 손상검토, 피인수회사 사업계획 대비 실적]
+            priority: 1
+            questions:
+              - 손상검토의 매출 성장률·할인율 가정은 피인수회사의 실제 실적과 맞는가?
+              - 당기 인수 거래의 매수가격 배분에서 식별한 무형자산은?
+
+  shipbuilding:
+    name: 조선업
+    group: 제조
+    review: {status: draft, note: "2026-11 초안 — 감사인 검토 전"}
+    summary: "선주와 수년짜리 건조계약을 맺고 진행률로 수익을 인식하는 수주산업. 총예정원가 추정, 공사손실충당부채, 환헤지와 선수금 환급보증이 핵심이다"
+    ksic_prefixes: ["311"]
+    detect_keywords: [선박, 조선, 건조, 수주잔고, 선주, LNG선, 해양플랜트, 인도, 헤비테일]
+    profile:
+      business_model:
+        - 선주와 선박 건조계약을 맺고 2~3년에 걸쳐 설계·건조해 인도한다
+        - 대금은 단계별로 받고(인도 시 많이 받는 헤비테일 구조) 달러 수주가 많아 환헤지를 한다
+        - 은행이 선수금 환급보증(RG)을 서 주어야 수주할 수 있다
+      value_chain: [수주, 설계, 건조, 인도, 보증수리]
+      stakeholders: [해외 선주·해운사, 조선기자재 협력사, 사내 협력업체, 금융기관(RG 발급), 선급]
+      stage_info:
+        수주:
+          icon: contract
+          do: "선주와 선가·인도일·지체상금 조건으로 건조계약을 맺는다"
+          money: "선주 → 회사: 계약금(선수금) / 은행: 선수금 환급보증"
+          books: "계약 조건이 수익인식·손실부담 판단의 기초, 계약부채"
+        설계:
+          icon: design
+          do: "기본·상세 설계를 하고 기자재를 발주한다"
+          money: "회사 → 설계·기자재사: 설계비, 기자재 선급금"
+          books: "총예정원가 최초 추정, 선급금"
+        건조:
+          icon: ship
+          do: "블록을 만들어 도크에서 조립·탑재하고 시운전한다"
+          money: "회사 → 협력사·자재사: 인건비·강재비"
+          books: "투입원가 기준 진행률, 계약자산(미청구공사)"
+        인도:
+          icon: complete
+          do: "선주에게 배를 인도하고 잔금을 받는다"
+          money: "선주 → 회사: 인도 대금(헤비테일), 지체 시 지체상금 차감"
+          books: "매출채권, 계약자산 정산, 외화환산·파생상품 정산"
+        보증수리:
+          icon: repair
+          do: "인도 후 보증기간 동안 결함을 수리한다"
+          money: "회사 → 선주·수리업체: 보증수리비"
+          books: "하자보수충당부채"
+    traits:
+      - trait_id: SHP-COST
+        name: 총예정원가와 진행률
+        stage: 건조
+        detect_keywords: [총예정원가, 진행률, 강재, 후판, 원가 상승, 공사손실, 인건비]
+        risks:
+          - risk_id: SHP-R1
+            title: 총예정원가 추정과 공사손실충당부채
+            potential_risk: 강재 가격·인건비 상승과 공정 지연을 반영한 호선별 총예정원가 추정, 진행률 측정과 손실 예상 호선의 공사손실충당부채에 대한 확인 필요성이 존재
+            accounts: [매출, 계약자산, 매출원가, 공사손실충당부채]
+            assertions: [평가와배분, 정확성, 완전성]
+            references: [K-IFRS 제1115호, K-IFRS 제1037호, 감사기준서 540]
+            evidence_docs: [호선별 실행예산과 변경 내역, 공정률 보고, 손실 예상 호선 목록]
+            priority: 1
+            metrics:
+              - name: 계약자산 ÷ 매출
+                kind: ratio
+                num: contract_assets
+                den: revenue
+                signal: {threshold: 5, direction: up}
+                question: "계약자산 ÷ 매출이 {prev}에서 {cur}로 변동했다({change}). 청구가 늦어진 호선과 헤비테일 조건은?"
+              - name: 매출원가율
+                kind: ratio
+                num: cogs
+                den: revenue
+                signal: {threshold: 3, direction: both}
+                question: "매출원가율이 {prev}에서 {cur}로 변동했다({change}). 총예정원가가 크게 바뀐 호선은?"
+            questions:
+              - 총예정원가 변경이 큰 호선과 그 사유(강재·인건비·설계 변경)는?
+              - 공정 지연으로 지체상금이 예상되는 호선과 변동대가 반영 여부는?
+      - trait_id: SHP-FX
+        name: 달러 수주와 환헤지
+        stage: 수주
+        detect_keywords: [환헤지, 선물환, 파생상품, 외화, 달러, 위험회피]
+        risks:
+          - risk_id: SHP-R2
+            title: 선물환 공정가치와 확정계약 위험회피
+            potential_risk: 장기 달러 수주에 대한 선물환 계약의 공정가치 측정과 확정계약 위험회피회계 적용의 적정성에 대한 확인 필요성이 존재
+            accounts: [파생상품자산·부채, 확정계약자산·부채, 파생상품손익]
+            assertions: [평가와배분, 표시와공시]
+            references: [K-IFRS 제1109호, K-IFRS 제1113호]
+            evidence_docs: [선물환 계약 명세와 은행 확인, 위험회피 문서화, 호선별 헤지 비율]
+            priority: 2
+            questions:
+              - 호선별 헤지 비율과 위험회피 관계 문서화는 어떻게 관리하는가?
+      - trait_id: SHP-RG
+        name: 선수금 환급보증과 인도 지연
+        stage: 인도
+        detect_keywords: [선수금환급보증, RG, 인도 지연, 계약 취소, 지체상금]
+        risks:
+          - risk_id: SHP-R3
+            title: 계약 취소·인도 지연 위험과 보증 공시
+            potential_risk: 선주 재무 악화로 인한 계약 취소·인도 연기와 선수금 환급보증 관련 우발부채, 미인도 선박 재고 평가에 대한 확인 필요성이 존재
+            accounts: [계약부채(선수금), 재고자산(미인도 선박), 우발부채 주석]
+            assertions: [완전성, 평가와배분, 표시와공시]
+            references: [K-IFRS 제1037호, K-IFRS 제1115호, K-IFRS 제1002호]
+            evidence_docs: [선주별 대금 회수 현황, 인도 연기·취소 협의 문서, RG 발급 내역]
+            priority: 2
+            questions:
+              - 인도가 연기되거나 대금 지급이 늦은 선주가 있는가? 취소 시 재매각 가정은?
+
+  food_beverage:
+    name: 식음료 제조업
+    group: 소비재
+    review: {status: draft, note: "2026-11 초안 — 감사인 검토 전"}
+    summary: "농수산 원료를 가공해 대형마트·편의점·대리점 채널로 파는 소비재 산업. 판매장려금·리베이트, 유통기한 재고, 원재료 가격 변동이 핵심이다"
+    ksic_prefixes: ["10", "11"]
+    detect_keywords: [식품, 음료, 주류, 제과, 라면, 유통채널, 대형마트, 원맥, 원당, 가공식품]
+    profile:
+      business_model:
+        - 밀·원당·대두 등 농수산 원료를 사들여 가공식품·음료·주류를 만든다
+        - 대형마트·편의점·온라인·대리점 채널에 판매하며 채널에 판매장려금·판촉비를 준다
+        - 원료 가격과 환율이 원가를, 브랜드와 신제품이 판매량을 좌우한다
+      value_chain: [원재료 구매, 생산·가공, 채널 판매, 판촉·장려금, 재고·유통기한 관리]
+      stakeholders: [농수산 원료 공급사, 대형마트·편의점·온라인몰, 대리점, 식품의약품안전처, 소비자]
+      stage_info:
+        원재료 구매:
+          icon: ship
+          do: "원맥·원당·대두 등 원료를 국내외에서 들여온다"
+          money: "회사 → 원료사: 원료 대금(외화)"
+          books: "재고자산(원재료), 매입채무, 외화환산"
+        생산·가공:
+          icon: food
+          do: "공장에서 원료를 가공해 제품을 만들고 포장한다"
+          money: "인건비·포장재비·에너지비가 원가에 쌓인다"
+          books: "제품·재공품, 유형자산, 원가계산"
+        채널 판매:
+          icon: store
+          do: "대형마트·편의점·대리점에 제품을 공급한다"
+          money: "유통채널 → 회사: 판매대금"
+          books: "매출, 매출채권"
+        판촉·장려금:
+          icon: brand
+          do: "채널 행사와 진열 대가로 판매장려금·판촉비를 지급한다"
+          money: "회사 → 유통채널: 판매장려금·리베이트"
+          books: "매출 차감(고객에게 지급할 대가), 미지급금"
+        재고·유통기한 관리:
+          icon: package
+          do: "유통기한이 다가오는 제품을 관리하고 반품을 받는다"
+          money: "반품·폐기는 손실로 나간다"
+          books: "재고자산평가손실, 반품충당(환불부채)"
+    traits:
+      - trait_id: FNB-REBATE
+        name: 유통채널 판매장려금
+        stage: 판촉·장려금
+        detect_keywords: [판매장려금, 판촉, 리베이트, 대형마트, 편의점, 행사]
+        risks:
+          - risk_id: FNB-R1
+            title: 판매장려금의 매출 차감과 기말 미지급 추정
+            potential_risk: 유통채널에 지급하는 판매장려금·판촉비가 매출 차감 대상인지, 기말까지 확정되지 않은 장려금의 추정이 완전한지에 대한 확인 필요성이 존재
+            accounts: [매출, 미지급금(판촉), 판매촉진비]
+            assertions: [정확성, 완전성, 표시와공시]
+            references: [K-IFRS 제1115호]
+            evidence_docs: [채널별 장려금 약정, 기말 미지급 장려금 산정, 기말 후 정산 내역]
+            priority: 1
+            questions:
+              - 채널에 지급하는 대가 중 매출에서 빼는 것과 판매비로 보는 것의 구분 기준은?
+              - 기말 이후 정산된 장려금이 기말 추정액과 얼마나 차이 났는가?
+      - trait_id: FNB-INV
+        name: 유통기한 재고와 반품
+        stage: 재고·유통기한 관리
+        detect_keywords: [유통기한, 반품, 폐기, 재고, 신제품]
+        risks:
+          - risk_id: FNB-R2
+            title: 유통기한 임박 재고와 반품 추정
+            potential_risk: 유통기한이 짧은 제품의 진부화 재고 평가와 채널 반품 예상분(환불부채) 추정에 대한 확인 필요성이 존재
+            accounts: [재고자산, 재고자산평가손실, 환불부채]
+            assertions: [평가와배분, 실재성, 완전성]
+            references: [K-IFRS 제1002호, K-IFRS 제1115호]
+            evidence_docs: [유통기한별 재고 연령표, 반품·폐기 실적, 재고 실사 결과]
+            priority: 2
+            metrics:
+              - name: 재고자산 회전일수
+                kind: days
+                num: inventory
+                den: cogs
+                signal: {threshold: 15, direction: up}
+                question: "재고자산 회전일수가 {prev}에서 {cur}로 늘었다. 판매 부진 제품과 유통기한 임박 재고는?"
+            questions:
+              - 유통기한이 얼마 남지 않은 재고는 어떻게 평가했는가?
+      - trait_id: FNB-COST
+        name: 원재료 가격과 환율
+        stage: 원재료 구매
+        detect_keywords: [원맥, 원당, 대두, 원재료 가격, 곡물, 환율]
+        risks:
+          - risk_id: FNB-R3
+            title: 원재료 가격 급등과 원가 반영
+            potential_risk: 곡물·원당 가격과 환율 급등이 원가에 반영되는 시점, 원재료 선물·장기계약의 회계처리에 대한 확인 필요성이 존재
+            accounts: [매출원가, 재고자산, 파생상품]
+            assertions: [정확성, 평가와배분]
+            references: [K-IFRS 제1002호, K-IFRS 제1109호]
+            evidence_docs: [주요 원재료 구매 단가 추이, 원재료 선물·계약 명세]
+            priority: 3
+            metrics:
+              - name: 매출원가율
+                kind: ratio
+                num: cogs
+                den: revenue
+                signal: {threshold: 3, direction: both}
+                question: "매출원가율이 {prev}에서 {cur}로 변동했다({change}). 원재료 가격·환율과 판가 인상 효과는?"
+            questions:
+              - 원재료 가격 상승을 판가에 언제, 얼마나 반영했는가?

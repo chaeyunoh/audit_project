@@ -1,0 +1,108 @@
+# 회계법인 본부(조직) 체계별 산업 분류 — '본부별 산업 지도' 화면의 근거
+#
+#  - sectors[].ksic : 이 섹터로 보는 KSIC 코드 접두어 (회사 업종코드 → 본부·섹터 판별, 가장 긴 접두어 우선)
+#  - sectors[].kb : industry_kb.yaml의 산업 키. 비어 있으면 화면에 '준비 중'으로 표시 (지식베이스 확장 대상)
+#  - kind: industry(산업 본부) / function(감사·인증 등 기능 본부 — 산업 대신 공통 검토 영역과 연결)
+#  - 본부-산업 연결은 작성자 판단이 섞여 있으므로(note) 사용 전 실제 조직 기준으로 확인할 것
+#  - examples 는 이해를 돕기 위한 대표 기업 예시일 뿐, 실제 담당 관계를 뜻하지 않는다
+map_version: "2026.11-3"  # 11-2: 섹터별 KSIC 접두어 / 11-3: 추가 산업 연결
+
+systems:
+  - key: domestic
+    name: IM·CM·IGH·ICE·B&F 체계
+    divisions:
+      - code: IM
+        name: 제조업 1~4본부
+        kind: industry
+        about: 철강·자동차·화학 등 제조업
+        examples: [포스코]
+        sectors:
+          - {name: 철강, kb: steel, ksic: ["241", "242", "243"]}
+          - {name: 자동차, kb: automobile, ksic: ["30"]}
+          - {name: 화학, kb: chemical, ksic: ["19", "20", "22"]}
+          - {name: 조선, kb: shipbuilding, ksic: ["311"]}
+          - {name: 2차전지, kb: secondary_battery, ksic: ["2820"]}
+      - code: CM
+        name: 소비재 1·2본부
+        kind: industry
+        about: 식음료·리테일 등 소비재
+        sectors:
+          - {name: 식음료, kb: food_beverage, ksic: ["10", "11", "12"]}
+          - {name: 리테일·가맹, kb: franchise_retail, ksic: ["46", "47", "56"]}
+          - {name: 백화점·면세, kb: department_store, ksic: ["47111"]}
+      - code: IGH
+        name: 단일본부 (인프라·가버먼트·헬스케어)
+        kind: industry
+        about: 건설·공공기관, 인프라·가버먼트·헬스케어
+        sectors:
+          - {name: 건설, kb: construction, ksic: ["41", "42"]}
+          - {name: 공공기관, ksic: ["84"]}
+          - {name: 인프라, ksic: ["35", "36", "37", "38", "52"]}
+          - {name: 헬스케어, kb: pharma_bio, ksic: ["21", "27", "86"]}
+      - code: ICE
+        name: 정보통신 1~3본부
+        kind: industry
+        about: 플랫폼·전자·통신
+        examples: [카카오, 삼성전자, 통신사]
+        sectors:
+          - {name: 전자·반도체, kb: semiconductor, ksic: ["26", "28"]}
+          - {name: 플랫폼·인터넷, kb: platform, ksic: ["58", "62", "63"]}
+          - {name: 통신, kb: telecom, ksic: ["61", "60"]}
+      - code: B&F
+        name: 뱅킹 1~3본부
+        kind: industry
+        about: 은행 등 금융기관
+        sectors:
+          - {name: 은행·금융기관, kb: banking, ksic: ["64", "65", "66"]}
+
+  - key: hanyoung
+    name: 한영 본부 체계
+    divisions:
+      - code: 1본부
+        name: 산업재 및 소비재
+        kind: industry
+        about: 산업재(건설·기계 등)와 소비재
+        note: 건설을 산업재로 분류한 것은 작성자 판단 — 확인 필요
+        sectors:
+          - {name: 산업재·건설, kb: construction, ksic: ["41", "42", "24", "25", "29", "31"]}
+          - {name: 소비재·유통, kb: franchise_retail, ksic: ["10", "11", "12", "13", "14", "15", "46", "47", "56"]}
+      - code: 2본부
+        name: 제약/바이오 및 소비재
+        kind: industry
+        about: 제약·바이오와 소비재
+        sectors:
+          - {name: 제약·바이오, kb: pharma_bio, ksic: ["21", "70"]}
+          - {name: 소비재·유통, kb: franchise_retail, ksic: ["10", "11", "12", "13", "14", "15", "46", "47", "56"]}
+          - {name: 백화점·면세, kb: department_store, ksic: ["47111"]}
+      - code: 3본부
+        name: 테크놀로지
+        kind: industry
+        about: 전자·반도체·IT
+        sectors:
+          - {name: 전자·반도체, kb: semiconductor, ksic: ["26", "28"]}
+          - {name: 2차전지, kb: secondary_battery, ksic: ["2820"]}
+          - {name: IT·플랫폼, kb: platform, ksic: ["58", "61", "62", "63"]}
+      - code: 4본부
+        name: 에너지
+        kind: industry
+        about: 정유·화학·전력·에너지
+        sectors:
+          - {name: 정유·화학, kb: chemical, ksic: ["19", "20"]}
+          - {name: 전력·신재생, ksic: ["35"]}
+      - code: 5본부
+        name: 모빌리티
+        kind: industry
+        about: 자동차·부품·운송
+        sectors:
+          - {name: 자동차·부품, kb: automobile, ksic: ["30"]}
+          - {name: 운송·물류, ksic: ["49", "50", "51", "52"]}
+      - code: FAAS
+        name: 감사/컨설팅
+        kind: function
+        about: 회계 자문·감사 지원 (산업 공통)
+        focus: [G-REV, G-MO, G-RP]
+      - code: ATR
+        name: 전산감사/내부회계 인증
+        kind: function
+        about: IT 통제 감사, 내부회계관리제도 인증 (산업 공통)
+        focus: [G-MO]
