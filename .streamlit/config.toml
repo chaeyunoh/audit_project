@@ -1,0 +1,23 @@
+# 밝은 단일 테마 — 하늘·크림 포인트, 잉크색 버튼, 연회색 패널 (IBM Plex Sans KR)
+[theme]
+base = "light"
+font = "'IBM Plex Sans KR':https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap"
+codeFont = "'IBM Plex Mono':https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=swap"
+primaryColor = "#0B0B0C"
+linkColor = "#2F7FE0"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F5F6FA"
+textColor = "#0B0B0C"
+borderColor = "#E3E5EC"
+baseRadius = "10px"
+buttonRadius = "6px"
+headingFontWeights = [700, 700, 700, 600, 600, 600]
+metricValueFontWeight = 700
+
+greenColor = "#1F7A4D"
+orangeColor = "#B45309"
+redColor = "#C0261A"
+blueColor = "#2F7FE0"
+grayColor = "#5D6170"
+violetColor = "#5B4BC4"
+chartCategoricalColors = ["#2F7FE0", "#0B0B0C", "#A9CFF5", "#B45309", "#1F7A4D", "#5B4BC4", "#9A9AA0"]

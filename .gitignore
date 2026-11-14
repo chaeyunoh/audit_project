@@ -1,0 +1,21 @@
+# 환경
+.venv/
+__pycache__/
+.pytest_cache/
+.cache/
+
+# 비밀 정보 — 절대 커밋하지 않음
+.env
+.streamlit/secrets.toml
+
+# 실행 산출물 (재현 가능, 실제 기업 공시 원문이 들어갈 수 있음)
+runs/
+
+# 사람 평가 기록 (평가자 이름 포함 가능 — 공유 시 별도 판단)
+eval/results.csv
+
+# 로컬 개발 도구 설정 폴더 — 프로젝트 산출물이 아니므로 저장소에 올리지 않음
+.claude/
+
+# 산업 초안 생성기가 저장한 초안 — 검토 전 자료이므로 기본은 올리지 않음 (검토 후 industry_kb.yaml로 옮김)
+knowledge/drafts/
