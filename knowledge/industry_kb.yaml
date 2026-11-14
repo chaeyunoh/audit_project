@@ -779,7 +779,7 @@ industries:
   department_store:
     name: 백화점·면세 유통업
     group: 소비재
-    review: {status: draft, note: "2026-11-15 신세계 2025 사업보고서 주석과 대조해 수정. 상품권 항목은 공시 미확인 — 최종 승인 전"}
+    review: {status: reviewed, note: "2026-11-15 신세계 2025 사업보고서 주석과 대조·수정 후 검토자 승인. 상품권(DS-R2)은 공시 미확인이라 우선순위 2로 유지"}
     summary: "입점 브랜드 판매에서 수수료를 거두는 백화점과 면세점 중심의 유통업. 매출 총액·순액 표시, 포인트 이연, 점포·면세 사업의 손상이 감사 초점이다"
     ksic_prefixes: ["47111"]
     detect_keywords: [백화점, 면세, 특정매입, 직매입, 상품권, 점포, 아울렛, 입점]
@@ -944,7 +944,7 @@ industries:
   secondary_battery:
     name: 2차전지 제조업
     group: 제조
-    review: {status: draft, note: "2026-11-15 LG에너지솔루션 2025 사업보고서 주석과 대조해 수정. 메탈 연동 판가는 공시 미확인 — 최종 승인 전"}
+    review: {status: reviewed, note: "2026-11-15 LG에너지솔루션 2025 사업보고서 주석과 대조·수정 후 검토자 승인. 메탈 연동 판가(BAT-R2)는 공시 미확인이라 우선순위 2로 유지"}
     summary: "완성차와 장기 공급계약을 맺고 대규모 해외 공장을 짓는 장치산업. 판매보증 충당부채, 합작법인 지배력 판단, 세액공제 회계, 설비 손상이 핵심이다"
     ksic_prefixes: ["2820"]
     detect_keywords: [배터리, 이차전지, 2차전지, 양극재, ESS, 전기차, EV, 셀]
