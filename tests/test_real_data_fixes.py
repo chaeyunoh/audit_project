@@ -89,3 +89,27 @@ def test_dart_network_errors_never_contain_the_api_key(monkeypatch):
         with pytest.raises(CollectError) as info:
             DartCollector(secret)._get("document.xml", rcept_no="1")
         assert secret not in str(info.value) and info.value.__cause__ is None and info.value.__suppress_context__
+
+
+# ---------- 첨부정정 공시는 본문이 없다 (현대제철 2025) ----------
+def test_pick_annual_report_skips_attachment_only_corrections():
+    from scanner.collect import pick_annual_report
+    rows = [{"rcept_no": "3", "report_nm": "[첨부정정]사업보고서 (2025.12)"},
+            {"rcept_no": "2", "report_nm": "[첨부정정]사업보고서 (2025.12)"},
+            {"rcept_no": "1", "report_nm": "사업보고서 (2025.12)"}]
+    assert pick_annual_report(rows)["rcept_no"] == "1"
+    amended = [{"rcept_no": "9", "report_nm": "[기재정정]사업보고서 (2025.12)"}] + rows
+    assert pick_annual_report(amended)["rcept_no"] == "9"          # 본문 전체 정정은 사용
+
+
+def test_document_error_xml_becomes_readable_error(monkeypatch):
+    import pytest
+
+    from scanner.collect import CollectError, DartCollector
+    body = '<?xml version="1.0"?><result><status>014</status><message>파일이 존재하지 않습니다.</message></result>'
+
+    class R:
+        content = body.encode("utf-8")
+    monkeypatch.setattr(DartCollector, "_get", lambda self, *a, **k: R())
+    with pytest.raises(CollectError, match=r"\[014\].*파일이 존재하지 않습니다"):
+        DartCollector("k" * 40).document_text("1")

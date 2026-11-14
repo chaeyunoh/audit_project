@@ -103,10 +103,7 @@ class DartCollector:
                 raise CollectError("최근 1년 6개월 사이 제출된 사업보고서가 없습니다. "
                                    "비상장·상장폐지·신설 법인일 수 있으니 다른 후보를 고르세요.") from e
             raise
-        reports = [r for r in data.get("list", []) if "사업보고서" in r["report_nm"]]
-        if not reports:
-            raise CollectError("최근 사업보고서를 찾을 수 없습니다.")
-        return reports[0]
+        return pick_annual_report(data.get("list", []))
 
     def corp_code_for_stock(self, stock_code: str) -> str:
         """종목코드 → 고유번호 (corp_code를 저장하지 않았던 옛 분석 결과용)."""
@@ -130,7 +127,14 @@ class DartCollector:
         return data.get("list", [])
 
     def document_text(self, rcept_no: str) -> str:
-        z = zipfile.ZipFile(io.BytesIO(self._get("document.xml", rcept_no=rcept_no).content))
+        content = self._get("document.xml", rcept_no=rcept_no).content
+        if not content.startswith(b"PK"):
+            # 원문 파일 대신 오류 XML이 온 경우 (예: 014 '파일이 존재하지 않습니다')
+            st = re.search(rb"<status>(\d+)</status>", content)
+            msg = re.search(rb"<message>(.*?)</message>", content, re.S)
+            raise CollectError(f"DART 원문 파일을 받지 못했습니다 [{st.group(1).decode() if st else '?'}]: "
+                               f"{msg.group(1).decode('utf-8', 'replace') if msg else '응답이 zip이 아님'}")
+        z = zipfile.ZipFile(io.BytesIO(content))
         text = ""
         for n in z.namelist():
             raw = z.read(n)
@@ -270,6 +274,16 @@ def rank_corps(corps: list[dict], name: str, limit: int = 15, listed_only: bool 
 
 
 LISTED_CLS = {"Y": "유가증권시장", "K": "코스닥", "N": "코넥스"}  # DART 기업개황 corp_cls (E = 기타·비상장)
+
+
+def pick_annual_report(rows: list[dict]) -> dict:
+    """공시 목록에서 분석할 사업보고서 1건. 최신순으로 오되,
+    '[첨부정정]'·'[첨부추가]'는 첨부서류만 고친 공시라 본문이 없으므로(원문 요청 시 014) 건너뛴다.
+    '[기재정정]'은 본문 전체를 다시 낸 것이므로 그대로 쓴다. (현대제철 2025 사업보고서에서 발견)"""
+    reports = [r for r in rows if "사업보고서" in r["report_nm"] and not r["report_nm"].lstrip().startswith("[첨부")]
+    if not reports:
+        raise CollectError("최근 사업보고서를 찾을 수 없습니다.")
+    return reports[0]
 
 
 def is_listed(info: dict) -> bool:
