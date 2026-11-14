@@ -206,13 +206,13 @@ class ClaudeAnalyzer:
         self.model = model
         self.effort = effort
 
-    def _call(self, user: str, schema: dict, system: str = SYSTEM_PROMPT, max_tokens: int = 16000) -> dict:
+    def _call(self, user: str, schema: dict) -> dict:
         a = self.anthropic
         try:
             resp = self.client.beta.messages.create(
                 model=self.model,
-                max_tokens=max_tokens,
-                system=system,
+                max_tokens=16000,
+                system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": user}],
                 output_config={"effort": self.effort,
                                "format": {"type": "json_schema", "schema": schema}},

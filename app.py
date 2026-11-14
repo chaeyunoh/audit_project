@@ -39,8 +39,6 @@ page = st.navigation(
                     help="한 산업의 사업 구조, 가치사슬별 특성, 계정·주장 지도, 재무 지표. 기업 분석 결과에서 바로 넘어올 수 있습니다."),
             st.Page("app_pages/overview.py", title="산업 목록", icon=":material/apps:",
                     help="지식베이스에 있는 산업을 카드로 훑어봅니다."),
-            st.Page("app_pages/kb_builder.py", title="산업 초안 만들기", icon=":material/note_add:",
-                    help="같은 산업 상장사 3~5곳의 사업의 내용과 재무제표로 새 산업의 지식베이스 초안을 만듭니다."),
         ],
         # 보류: 본부별 산업(app_pages/divisions.py), 산업 비교(app_pages/compare.py) — 본부 구분은 작성자 추정이 섞여 있어 숨김
     },

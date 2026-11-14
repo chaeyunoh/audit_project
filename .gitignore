@@ -17,5 +17,3 @@ eval/results.csv
 # 로컬 개발 도구 설정 폴더 — 프로젝트 산출물이 아니므로 저장소에 올리지 않음
 .claude/
 
-# 산업 초안 생성기가 저장한 초안 — 검토 전 자료이므로 기본은 올리지 않음 (검토 후 industry_kb.yaml로 옮김)
-knowledge/drafts/

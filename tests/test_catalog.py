@@ -61,8 +61,6 @@ def test_sector_map_points_only_to_known_industries_and_risks():
                     assert sec.get("kb") in (None, *kb.industries()), sec
     # 지식베이스의 모든 산업은 적어도 한 본부 체계에 속한다 (한영 체계에는 금융 본부가 없음)
     for key in kb.industries():
-        if kb.is_draft_file(key):   # 초안 생성기로 추가된 산업은 검토 후 본부 지도에 넣는다
-            continue
         assert catalog.divisions_of(key), key
 
 

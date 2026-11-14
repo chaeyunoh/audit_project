@@ -9,29 +9,10 @@ import yaml
 KB_PATH = Path(__file__).resolve().parent.parent / "knowledge" / "industry_kb.yaml"
 
 
-DRAFT_DIR = KB_PATH.parent / "drafts"
-
-
 @lru_cache(maxsize=1)
 def load_kb() -> dict:
-    """본 지식베이스 + knowledge/drafts/*.yaml (초안 생성기가 저장한 산업).
-    초안은 기존 산업을 덮어쓰지 못하고, 항상 '초안' 상태로 표시된다."""
     with open(KB_PATH, encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-    for path in sorted(DRAFT_DIR.glob("*.yaml")) if DRAFT_DIR.exists() else []:
-        with open(path, encoding="utf-8") as f:
-            for key, block in (yaml.safe_load(f) or {}).items():
-                if key in data["industries"]:
-                    continue
-                block.setdefault("review", {})["status"] = "draft"
-                block["review"]["file"] = path.name
-                data["industries"][key] = block
-    return data
-
-
-def is_draft_file(industry_key: str) -> bool:
-    """초안 생성기로 추가된 산업인지 (본 파일에 없는 산업)."""
-    return bool(industries().get(industry_key, {}).get("review", {}).get("file"))
+        return yaml.safe_load(f)
 
 
 def industries() -> dict[str, dict]:
