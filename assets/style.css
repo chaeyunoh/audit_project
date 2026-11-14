@@ -1,0 +1,200 @@
+/* 커스텀 블록 전용 스타일 (.ais- 접두어만 사용 — Streamlit 내부 요소는 건드리지 않는다).
+   색은 .streamlit/config.toml 테마와 같은 값. 밝은 단일 화면 디자인. */
+.ais{--ink:#0B0B0C;--gray:#6B6B6B;--mute:#9A9AA0;--line:#E3E5EC;--paper:#F5F6FA;--white:#FFF;
+  --sky:#A9CFF5;--cream:#F3EEDD;--blue:#2F7FE0;--blue-bg:#E4EEFB;
+  --ok:#1F7A4D;--ok-bg:#E6F4EA;--warn:#B45309;--warn-bg:#FDF1DD;--bad:#C0261A;--bad-bg:#FDE9E7;--chk:#5D6170;--chk-bg:#ECEEF3;
+  color:var(--ink);word-break:keep-all;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;line-height:1.55}
+.ais *{box-sizing:border-box}
+.ais .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.ais .pill{display:inline-block;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;font-weight:500;
+  color:var(--blue);background:var(--blue-bg);padding:1px 8px;border-radius:999px;white-space:nowrap}
+.ais .pill.ink{color:#fff;background:var(--ink)}
+.ais .pill.gray{color:var(--chk);background:var(--chk-bg)}
+
+/* 첫 화면 */
+.ais-hero{background:linear-gradient(180deg,var(--sky) 0%,#CFE2F4 45%,var(--cream) 100%);border-radius:24px;
+  padding:56px 20px 28px;text-align:center}
+.ais-hero .h1{font-size:clamp(28px,5vw,52px);font-weight:700;line-height:1.18;letter-spacing:-.02em}
+.ais-hero .lead{font-size:clamp(15px,1.9vw,18px);font-weight:500;margin-top:14px;color:#2B2D33}
+.ais-dash{margin:32px auto 0;max-width:920px;background:var(--paper);border:1.5px solid var(--ink);border-radius:18px;
+  padding:22px;text-align:left}
+.ais-dash .hi{font-size:19px;font-weight:700}
+.ais-dash .hi-sub{color:var(--gray);font-size:14px;font-weight:500;margin-bottom:14px}
+.ais-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ais-card{background:var(--white);border-radius:8px;padding:12px 14px;min-height:104px;display:flex;flex-direction:column;
+  justify-content:space-between;position:relative;min-width:0}
+.ais-card.tint{background:var(--blue-bg)}
+.ais-card .l{font-size:13px;font-weight:600;color:var(--gray)}
+.ais-card .v{font-size:26px;font-weight:700;line-height:1.2}
+.ais-card .v small{font-size:13px;font-weight:400;color:var(--gray);margin-left:2px}
+.ais-card .d{font-size:12px;font-weight:600;color:var(--blue)}
+.ais-card .pill{position:absolute;top:10px;right:10px}
+.ais-bars{margin-top:12px;background:var(--white);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.ais-bars .ttl{font-size:13px;font-weight:600;color:var(--gray)}
+.ais-bar{display:grid;grid-template-columns:96px minmax(0,1fr) 64px;gap:10px;align-items:center;font-size:14px;font-weight:600}
+.ais-bar .t{height:10px;background:var(--paper);position:relative}
+.ais-bar .t i{position:absolute;left:0;top:0;bottom:0;background:var(--blue)}
+.ais-bar .r{text-align:right}
+
+/* 섹션 머리 */
+.ais-sec{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin:8px 0 4px}
+.ais-sec .h2{font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-.01em}
+.ais-sec .cap{font-size:14px;font-weight:500;color:var(--gray)}
+
+/* 쉬운 말 요약 */
+.ais-plain{border:1.5px solid var(--ink);border-radius:14px;padding:18px 22px;background:var(--white)}
+.ais-plain .tag{font-size:12px;font-weight:600;color:var(--blue)}
+.ais-plain .txt{font-size:clamp(17px,2.1vw,20px);font-weight:700;line-height:1.55;margin-top:4px}
+.ais-plain .sub{font-size:14px;font-weight:500;color:var(--gray);margin-top:6px}
+
+/* 가치사슬 일러스트 */
+.ais-chain{display:flex;align-items:stretch;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x proximity}
+.ais-stage{flex:1 0 210px;min-width:210px;background:var(--white);border:1.5px solid var(--ink);border-radius:14px;
+  padding:14px;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start}
+.ais-stage .art{background:linear-gradient(180deg,#EAF3FD,var(--cream));border-radius:10px;height:96px;display:flex;
+  align-items:center;justify-content:center}
+.ais-stage .nm{font-size:16px;font-weight:700;line-height:1.3}
+.ais-stage .do{font-size:13px;color:#2B2D33}
+.ais-stage .row{font-size:12.5px;line-height:1.5;color:var(--gray)}
+.ais-stage .row b{display:inline-block;min-width:34px;font-size:11px;font-weight:700;color:var(--ink);background:var(--paper);
+  border-radius:4px;padding:0 5px;margin-right:4px}
+.ais-stage .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;padding-top:4px}
+.ais-arrow{flex:0 0 26px;display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:20px;font-weight:700}
+.ais-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;
+  border:1px solid var(--ink);background:var(--white);line-height:1.35}
+.ais-chip.fact{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.ais-chip.inf{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.ais-chip.unv{background:var(--chk-bg);border-color:var(--chk-bg);color:var(--chk)}
+.ais-chip.todo{border:1px dashed var(--mute);color:var(--mute);background:transparent}
+.ais-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 8px}
+.ais-dot.p1{background:var(--bad)}.ais-dot.p2{background:var(--warn)}.ais-dot.p3{background:#E0B400}
+.ais-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;font-weight:500;color:var(--gray);margin-top:2px}
+.ais-legend span{display:inline-flex;align-items:center;gap:5px}
+
+/* 산업 카드 */
+.ais-ind{display:flex;gap:14px;align-items:flex-start}
+.ais-ind .art{flex:0 0 72px;height:72px;border-radius:14px;background:linear-gradient(180deg,var(--sky),var(--cream));
+  display:flex;align-items:center;justify-content:center;border:1.5px solid var(--ink)}
+.ais-ind .nm{font-size:20px;font-weight:700}
+.ais-ind .sm{font-size:14px;color:#2B2D33;margin-top:2px}
+.ais-mini{font-size:12.5px;color:var(--gray);margin-top:10px}
+
+/* 본부 카드 */
+.ais-div{border:1.5px solid var(--ink);border-radius:14px;padding:16px;background:var(--white);height:100%}
+.ais-div.fn{background:var(--paper);border-style:dashed}
+.ais-div .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ais-div .code{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px;font-weight:500;background:var(--ink);color:#fff;
+  padding:2px 9px;border-radius:6px}
+.ais-div .nm{font-size:17px;font-weight:700;margin-top:10px}
+.ais-div .ab{font-size:13px;color:var(--gray)}
+.ais-div .meter{height:6px;background:var(--paper);border-radius:3px;margin-top:10px;position:relative;overflow:hidden}
+.ais-div .meter i{position:absolute;left:0;top:0;bottom:0;background:var(--blue)}
+.ais-div .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ais-div .note{font-size:12px;color:var(--warn);margin-top:8px}
+
+/* 작동 원리 */
+.ais-flow{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1.6fr) 28px minmax(0,1fr);gap:0;align-items:stretch}
+.ais-flow .col{background:var(--paper);border-radius:14px;padding:16px}
+.ais-flow .col.main{background:var(--white);border:1.5px solid var(--ink)}
+.ais-flow .ttl{font-size:13px;font-weight:700;color:var(--gray);margin-bottom:8px;letter-spacing:.02em}
+.ais-flow .it{font-size:14px;font-weight:600;padding:7px 0;border-top:1px solid var(--line);display:flex;gap:8px;align-items:baseline}
+.ais-flow .it:first-of-type{border-top:0}
+.ais-flow .it .n{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;color:var(--mute);min-width:24px}
+.ais-flow .it .s{display:block;font-size:12.5px;font-weight:400;color:var(--gray)}
+.ais-flow .ar{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--mute);font-weight:700}
+.ais-foot{font-size:13px;color:var(--gray);margin-top:10px}
+@media (max-width:760px){
+  .ais-flow{grid-template-columns:1fr}
+  .ais-flow .ar{transform:rotate(90deg);height:28px}
+  .ais-bar{grid-template-columns:76px minmax(0,1fr) 48px}
+}
+
+/* 첫 화면 (기업 분석, 검색 전) — 정적 디자인, 애니메이션 없음 */
+.ais-hero3{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(20px,3vw,40px);
+  border-radius:24px;padding:clamp(24px,4vw,48px);color:#F5F6FA;
+  background:radial-gradient(760px 420px at 100% 0%,rgba(47,127,224,.42),transparent 60%),#0B0B0C}
+.ais-hero3 .eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;letter-spacing:.08em;color:var(--sky)}
+.ais-hero3 .h1{font-size:clamp(36px,5.6vw,68px);font-weight:700;line-height:1.08;letter-spacing:-.035em;color:#fff;margin-top:16px}
+.ais-hero3 .h1 em{font-style:normal;color:var(--sky)}
+.ais-hero3 .lead{font-size:clamp(15px,1.6vw,17px);line-height:1.7;color:#C4CAD4;margin-top:18px;max-width:560px}
+.ais-hero3 .l{display:flex;flex-direction:column;min-width:0}
+.ais-hero3 .steps{display:flex;flex-direction:column;gap:12px;margin-top:auto;padding-top:22px}
+/* 데이터 출처 카드 — OpenDART */
+.ais-hero3 .src{margin-top:24px;background:#fff;color:var(--ink);border-radius:18px;padding:22px 24px;
+  display:flex;flex-direction:column;gap:14px}
+.ais-hero3 .src .top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ais-hero3 .src .wm{font-size:clamp(40px,4.6vw,60px);font-weight:700;letter-spacing:-.04em;line-height:1}
+.ais-hero3 .src .wm .o{color:var(--ink)}
+.ais-hero3 .src .wm .d{color:var(--blue)}
+.ais-hero3 .src .logo-img{display:block;max-height:64px;max-width:100%;width:auto}
+.ais-hero3 .src .who{font-size:12.5px;color:var(--gray);line-height:1.5;text-align:right}
+.ais-hero3 .src .who b{color:var(--ink);font-size:14px}
+.ais-hero3 .src .chips{display:flex;flex-wrap:wrap;gap:6px}
+.ais-hero3 .src .chips span{font-size:12px;font-weight:600;color:var(--blue);background:var(--blue-bg);border-radius:999px;padding:3px 10px}
+.ais-hero3 .s{display:flex;gap:14px;align-items:flex-start;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)}
+.ais-hero3 .s b{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:20px;font-weight:500;color:var(--sky);min-width:34px}
+.ais-hero3 .st{font-size:16px;font-weight:700;color:#fff}
+.ais-hero3 .sd{font-size:13px;color:#9AA3B2;margin-top:2px}
+.ais-hero3 .r{display:flex;flex-direction:column;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(169,207,245,.18);
+  border-radius:18px;padding:18px}
+.ais-hero3 .cap{display:flex;gap:8px;flex-wrap:wrap}
+.ais-hero3 .cap span{font-size:12px;font-weight:600;color:#0B0B0C;background:var(--sky);border-radius:999px;padding:3px 10px}
+.ais-hero3 .cap span+span{background:transparent;color:var(--sky);border:1px solid rgba(169,207,245,.45)}
+.ais-hero3 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.ais-hero3 .t{display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:rgba(255,255,255,.06);border-radius:12px;
+  padding:10px;min-width:0}
+.ais-hero3 .t .ic{width:44px;height:44px;border-radius:10px;background:linear-gradient(180deg,var(--sky),var(--cream));
+  display:flex;align-items:center;justify-content:center}
+.ais-hero3 .t .n{font-size:13px;font-weight:600;color:#fff;line-height:1.3}
+.ais-hero3 .t .g{font-size:11px;color:#9AA3B2}
+.ais-hero3 .foot{font-size:12.5px;color:#9AA3B2;margin-top:auto}
+@media (max-width:900px){.ais-hero3{grid-template-columns:1fr}}
+
+/* 분석 후 회사 머리 — 산업 요약 + 가치사슬 띠 */
+.ais-co{display:flex;gap:16px;align-items:flex-start;border-radius:18px;padding:18px 20px;color:#F5F6FA;
+  background:radial-gradient(600px 200px at 100% 0%,rgba(47,127,224,.45),transparent 65%),#0B0B0C}
+.ais-co .art{flex:0 0 72px;height:72px;border-radius:14px;background:linear-gradient(180deg,var(--sky),var(--cream));
+  display:flex;align-items:center;justify-content:center}
+.ais-co .bd{min-width:0;flex:1}
+.ais-co .nm{font-size:clamp(22px,2.6vw,30px);font-weight:700;letter-spacing:-.02em;color:#fff;display:flex;align-items:center;
+  gap:10px;flex-wrap:wrap}
+.ais-co .ind{font-size:13px;font-weight:600;color:#0B0B0C;background:var(--sky);border-radius:999px;padding:2px 10px}
+.ais-co .meta{font-size:12.5px;color:#9AA3B2;margin-top:2px}
+.ais-co .sum{font-size:15px;line-height:1.6;color:#DDE2EA;margin-top:8px}
+.ais-co .strip{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.ais-co .strip .st{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#fff;
+  border:1px solid rgba(169,207,245,.3);background:rgba(255,255,255,.05);border-radius:999px;padding:3px 10px 3px 4px}
+.ais-co .strip .st b{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10.5px;color:#0B0B0C;background:var(--sky);
+  border-radius:999px;padding:1px 6px}
+
+/* 단계 탐색 */
+.ais-stage.ais-stage-lg{min-width:0;flex:none}
+.ais-stage.ais-stage-lg .art{height:150px}
+.ais-stage.ais-stage-lg .nm{font-size:20px}
+.ais-kw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.ais-kw b{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;margin-left:2px}
+.ais-quotes{display:flex;flex-direction:column;gap:8px}
+.ais-quotes .q{border-left:3px solid var(--blue);background:var(--paper);border-radius:0 10px 10px 0;padding:10px 12px;
+  font-size:13.5px;line-height:1.6;display:flex;flex-direction:column;gap:4px}
+.ais-quotes .q .pill{align-self:flex-start}
+.ais mark{background:linear-gradient(transparent 55%,#FFE38A 55%);color:inherit;font-weight:700;padding:0 1px}
+
+/* 사업보고서 요약 */
+.ais-quote-hero{border-radius:16px;padding:20px 24px;background:linear-gradient(135deg,var(--blue-bg),var(--cream));
+  border:1.5px solid var(--ink);margin-top:4px}
+.ais-quote-hero .tag{font-size:12px;font-weight:700;color:var(--blue)}
+.ais-quote-hero .txt{font-size:clamp(17px,2vw,21px);font-weight:700;line-height:1.55;margin-top:6px}
+.ais-quote-hero .sub{font-size:14px;color:#2B2D33;margin-top:8px;line-height:1.6}
+.ais-card.ais-fact{min-height:150px;gap:6px;justify-content:flex-start;background:var(--white);border:1.5px solid var(--ink);
+  border-top:6px solid var(--blue)}
+.ais-card.ais-fact .v{font-size:24px;color:var(--blue)}
+.ais-card.ais-fact .s{font-size:12.5px;color:#2B2D33;line-height:1.5}
+.ais-card.ais-fact .pill{position:static;align-self:flex-start}
+.ais-card.ais-toc{min-height:170px;gap:8px;justify-content:flex-start;border:1.5px solid var(--ink)}
+.ais-toc .hd{display:flex;align-items:center;gap:10px}
+.ais-toc .hd .pill{position:static}
+.ais-toc .t{font-weight:700;font-size:15px;line-height:1.3}
+.ais-toc .s{font-size:12.5px;color:#2B2D33;line-height:1.5}
+.ais-toc .chips{display:flex;flex-wrap:wrap;gap:4px}
+.ais-toc .chips .ais-chip{font-size:11px;padding:1px 7px}
+.ais-toc .m{font-size:12px;color:var(--gray);margin-top:auto}
