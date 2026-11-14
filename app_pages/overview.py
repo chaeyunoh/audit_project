@@ -62,5 +62,5 @@ with c2.container(border=True, height="stretch"):
         st.caption(when)
 
 # 작동 원리
-ui.section("작동 원리", "무엇을 코드가 하고, 무엇을 AI가 하는지")
+ui.section("작동 원리", "무엇을 코드가 하고, 무엇을 지식베이스가 하는지")
 ui.flow()

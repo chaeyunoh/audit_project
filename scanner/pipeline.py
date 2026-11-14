@@ -12,7 +12,6 @@ from datetime import datetime
 from pathlib import Path
 
 from . import finance, kb, ksic, materiality, related_party
-from .analyze import PROMPT_VERSION, AnalyzerError, OfflineAnalyzer
 from .clean import clean, mask_pii
 from .guardrails import Guard
 from .finance import FinancialData
@@ -123,15 +122,8 @@ def run(company: str, docs: list[SourceDoc], meta: dict, analyzer,
     analysis_chunks = [c for c in chunks if c.doc_id not in rpt_ids]
 
     with _Timer(steps, "3. 산업 분석") as t:
-        try:
-            snapshot, traits = analyzer.analyze(industry_key, analysis_chunks)
-        except AnalyzerError as e:
-            # AI 실패를 '위험 없음'으로 보이게 하지 않는다: 오프라인 기준선으로 대체하고 화면에 알린다.
-            warnings.append(f"AI 분석 실패로 오프라인 기준선(키워드 추출 + 지식베이스)으로 대체했습니다: {e}")
-            guard._log("분석", "AI 실패 → 오프라인 대체", str(e))
-            analyzer = OfflineAnalyzer()
-            snapshot, traits = analyzer.analyze(industry_key, analysis_chunks)
-        t.note = f"{analyzer.mode} / 특성 후보 {len(traits)}개"
+        snapshot, traits = analyzer.analyze(industry_key, analysis_chunks)
+        t.note = f"특성 후보 {len(traits)}개"
 
     with _Timer(steps, "5. AI 역할 제한(가드레일)") as t:
         allowed = set(kb.trait_ids(industry_key))
@@ -186,12 +178,6 @@ def run(company: str, docs: list[SourceDoc], meta: dict, analyzer,
             text = texts.get(sid) if sid else None
             if not text:
                 return related_party.build_extraction(label, sid, None, None, "-")
-            if analyzer.mode == "LLM":
-                try:
-                    return related_party.build_extraction(label, sid, text, analyzer.extract_rpt(text), "AI")
-                except AnalyzerError as e:
-                    guard._log("특수관계자", "AI 추출 실패", str(e))
-                    return related_party.Extraction(source_id=sid, label=label, status="failed")
             if sid in recorded:  # 데모: 미리 기록한 추출 응답도 같은 인용 검증을 거친다
                 return related_party.build_extraction(label, sid, text, recorded[sid], "데모 고정 응답")
             return related_party.build_extraction(label, sid, text, None, "-")
@@ -230,13 +216,7 @@ def run(company: str, docs: list[SourceDoc], meta: dict, analyzer,
         industry_risks = [r for r in risks if r.basis in ("회사 공시로 확인된 특성", "산업 일반 특성")]
         added = 0
         per_risk: dict[str, int] = {}
-        try:
-            ai_questions = analyzer.questions(industry_risks, analysis_chunks)
-        except AnalyzerError as e:
-            warnings.append(f"AI 질문 생성 실패 — 지식베이스·재무 질문만 표시합니다: {e}")
-            guard._log("질문", "AI 실패 → 생략", str(e))
-            ai_questions = []
-        for rid, q in ai_questions:
+        for rid, q in analyzer.questions(industry_risks, analysis_chunks):
             q = guard.question(q, "질문")
             if not q or per_risk.get(rid, 0) >= MAX_AI_QUESTIONS_PER_RISK:
                 continue
@@ -251,7 +231,6 @@ def run(company: str, docs: list[SourceDoc], meta: dict, analyzer,
     report = Report(
         company=company, generated_at=datetime.now().isoformat(timespec="seconds"),
         mode=analyzer.mode, model=getattr(analyzer, "model", ""),
-        prompt_version=PROMPT_VERSION if analyzer.mode == "LLM" else "",
         sources=kept, chunks=chunks, cleaning=cleaning, snapshot=snapshot, risks=risks,
         guardrail_events=guard.events, steps=steps, input_fingerprint=fingerprint,
         financials=financials, overview_signals=overview, going_concern=going, rpt=rpt,

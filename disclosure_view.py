@@ -24,7 +24,7 @@ TOPIC_BADGE = {"소송·제재·사고": "red", "자금조달·자본": "orange"
 DAYS = 365
 
 
-@st.cache_data(ttl=3600, max_entries=50, show_spinner="DART에서 최근 공시를 불러오는 중…")
+@st.cache_data(ttl=3600, max_entries=50, show_spinner=False)
 def _fetch(corp_code: str, stock_code: str, days: int) -> tuple[list[dict], str]:
     """(공시 행, 안내 메시지). 키는 캐시 인자에 넣지 않는다."""
     key = os.getenv("DART_API_KEY", "")

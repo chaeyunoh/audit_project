@@ -25,7 +25,7 @@ FIELD_LABEL = {"related_party": "거래상대방", "relationship": "관계",
 
 Status = Literal["ok", "partial", "failed", "not_run", "no_source"]
 STATUS_LABEL = {"ok": "검증 완료", "partial": "일부 항목 제외", "failed": "추출 실패 — 확인 필요",
-                "not_run": "추출 미실행 — 확인 필요", "no_source": "원문 구간 없음 — 확인 필요"}
+                "not_run": "자동 추출 안 함 — 원문 직접 확인", "no_source": "원문 구간 없음 — 확인 필요"}
 
 
 class RPTItem(BaseModel):

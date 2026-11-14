@@ -20,7 +20,7 @@ import report_view
 import rpt_view
 import snapshot_view
 from scanner import collect, kb, materiality
-from scanner.analyze import AnalyzerError, make_analyzer
+from scanner.analyze import OfflineAnalyzer
 from scanner.brief import PRIORITY_ICON, to_markdown
 from scanner.evaluate import RUBRIC, auto_metrics, load_human_eval, save_human_eval
 from scanner.models import CLAIM_LABEL, Report, StepLog
@@ -28,14 +28,10 @@ from scanner.pipeline import export_json, run, source_label
 from snapshot_view import TYPE_COLOR
 
 # ---------------- 사이드바: 꼭 필요한 설정만 ----------------
-HAS_DART, HAS_CLAUDE = bool(os.getenv("DART_API_KEY")), bool(os.getenv("ANTHROPIC_API_KEY"))
+HAS_DART = bool(os.getenv("DART_API_KEY"))
 with st.sidebar:
     st.header("설정")
-    st.markdown((":green-badge[OpenDART 연결됨]" if HAS_DART else ":red-badge[DART_API_KEY 없음]") + " "
-                + (":green-badge[Claude 연결됨]" if HAS_CLAUDE else ":gray-badge[Claude 키 없음 · 오프라인]"))
-    use_llm = st.toggle("Claude로 분석", value=HAS_CLAUDE, disabled=not HAS_CLAUDE,
-                        help="끄면 지식베이스·키워드·업종 일반형 가치사슬로 오프라인 분석합니다 (가치사슬·공시 문장 연결은 오프라인에서도 동작).")
-    effort = st.select_slider("분석 깊이", ["low", "medium", "high"], value="medium") if use_llm else "medium"
+    st.markdown(":green-badge[OpenDART 연결됨]" if HAS_DART else ":red-badge[DART_API_KEY 없음]")
     engagement = st.segmented_control(
         "감사 유형", ["계속감사", "초도감사"], default="계속감사", key="engagement",
         help="초도감사를 고르면 기초잔액(감사기준서 510) 검토 영역이 추가됩니다.") or "계속감사"
@@ -56,7 +52,7 @@ with st.sidebar:
             up_public = st.checkbox("공개된 자료이며 고객 비공개 정보를 포함하지 않음을 확인합니다")
     st.caption(f"상장사 공개 공시만 사용 · 지식베이스 v{kb.kb_version()}")
 
-@st.cache_data(ttl=86400, max_entries=200, show_spinner="DART 기업 목록에서 찾는 중…")
+@st.cache_data(ttl=86400, max_entries=200, show_spinner=False)
 def dart_search(q: str) -> list[dict]:
     return collect.DartCollector(os.getenv("DART_API_KEY", "")).search_corps(q)
 
@@ -129,11 +125,12 @@ if start:
                                                  up.getvalue().decode("utf-8", errors="replace")))
         collect_step = StepLog(step="1. 데이터 수집", started="", seconds=round(time.perf_counter() - t0, 2),
                                note=f"문서 {len(docs)}건, 재무제표 {'있음' if meta.get('financials') else '없음'}")
-        with st.spinner("분석 중…"):
-            new = run(meta.get("corp_name") or company, docs, meta,
-                      make_analyzer(use_llm, effort=effort),
-                      industry_key=None if industry_override == "자동" else industry_override,
-                      financials=meta.get("financials"), engagement=engagement)
+        note = st.empty()   # 움직이는 스피너 대신 정적인 진행 문구
+        note.info("분석 중입니다 — 공시 정제, 산업 특성, 재무 신호, 특수관계자를 차례로 확인합니다.")
+        new = run(meta.get("corp_name") or company, docs, meta, OfflineAnalyzer(),
+                  industry_key=None if industry_override == "자동" else industry_override,
+                  financials=meta.get("financials"), engagement=engagement)
+        note.empty()
         new.steps.insert(0, collect_step)
         st.session_state.report = new
         st.session_state.review = {}
@@ -141,7 +138,7 @@ if start:
         for k in [k for k in st.session_state if str(k).startswith(("mat_", "d_", "m_"))]:
             del st.session_state[k]
         st.rerun()
-    except (collect.CollectError, AnalyzerError, ValueError) as e:
+    except (collect.CollectError, ValueError) as e:
         st.error(str(e))
 
 if not report:
@@ -285,7 +282,7 @@ with tabs[7]:
         st.markdown(f"모드 **{report.mode}** {report.model} · 프롬프트 {report.prompt_version or '-'} · "
                     f"입력지문 `{report.input_fingerprint}`")
         st.markdown(f"정제: 청크 {report.cleaning.chunk_count}개, 마스킹 {report.cleaning.masked_items or '없음'}")
-        st.markdown("**AI 통제(가드레일) 이벤트**")
+        st.markdown("**근거 검사(가드레일) 이벤트**")
         if report.guardrail_events:
             st.dataframe(pd.DataFrame([e.model_dump() for e in report.guardrail_events]), width="stretch")
         else:

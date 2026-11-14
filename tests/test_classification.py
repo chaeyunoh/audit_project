@@ -104,26 +104,6 @@ def test_is_listed_uses_corp_cls():
     assert not is_listed({"corp_cls": "E"}) and not is_listed({})
 
 
-def test_missing_credentials_become_analyzer_error():
-    from scanner.analyze import AnalyzerError, ClaudeAnalyzer
-    a = ClaudeAnalyzer.__new__(ClaudeAnalyzer)   # 네트워크·키 없이 _call의 예외 변환만 확인
-    import anthropic
-    a.anthropic, a.model, a.effort = anthropic, "m", "low"
-
-    class _NoAuth:
-        class beta:
-            class messages:
-                @staticmethod
-                def create(**_):
-                    raise TypeError('"Could not resolve authentication method. Expected one of api_key"')
-    a.client = _NoAuth
-    try:
-        a._call("x", {})
-        assert False
-    except AnalyzerError as e:
-        assert "ANTHROPIC_API_KEY" in str(e)
-
-
 def test_holding_company_code_needs_business_text():
     bank_text = "대출채권 예수부채 순이자마진 기대신용손실 고정이하여신 " * 8
     bank = [SourceDoc(doc_id="S02", title="t", publisher="p", raw_text=bank_text)]

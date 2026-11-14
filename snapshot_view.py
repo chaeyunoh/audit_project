@@ -78,7 +78,7 @@ def value_chain_map(r: Report, views: list[TraitView]):
         ui.section(f"가치사슬 — {tpl}", "업종코드(KSIC) 대분류로 고른 일반 템플릿 · 이 회사 고유 단계는 사업보고서에서 확인")
         note = "<span>업종 일반형 템플릿 — 산업 지식베이스 검토 전</span>"
         if r.snapshot.value_chain and r.snapshot.value_chain != stages:
-            note += "<span>· AI가 이 회사 공시로 정리한 가치사슬: " + " → ".join(ui._h(x) for x in r.snapshot.value_chain) + "</span>"
+            note += "<span>· 이 회사 공시로 정리한 가치사슬: " + " → ".join(ui._h(x) for x in r.snapshot.value_chain) + "</span>"
         ui.chain(stages, p["stage_info"], {}, note)
         return
     chips: dict[str, list[str]] = {}
@@ -92,7 +92,7 @@ def value_chain_map(r: Report, views: list[TraitView]):
     if orphan:
         notes.append("단계 미지정 특성: " + ", ".join(orphan))
     if r.snapshot.value_chain and r.snapshot.value_chain != stages:
-        notes.append("AI가 회사 자료로 정리한 가치사슬: " + " → ".join(r.snapshot.value_chain))
+        notes.append("회사 자료로 정리한 가치사슬: " + " → ".join(r.snapshot.value_chain))
     for n in notes:
         st.caption(n)
 

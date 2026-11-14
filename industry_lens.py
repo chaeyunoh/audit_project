@@ -225,7 +225,7 @@ def render(r: Report):
     stage_explorer(r, views, df)
 
     sv.business_structure(r)
-    with st.expander("전체 분석 문장 (AI·키워드 추출 원본)"):
+    with st.expander("전체 분석 문장 (키워드 추출 원본)"):
         sv.show_claims(s.characteristics)
         st.markdown("**정보 공백**")
         sv.show_claims(s.information_gaps)

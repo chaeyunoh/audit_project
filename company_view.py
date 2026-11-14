@@ -169,7 +169,7 @@ def header(r: Report):
     chain = catalog.profile(key)["value_chain"] or list(r.snapshot.value_chain)
     strip = "".join(f'<span class="st"><b>{i:02d}</b>{_h(x)}</span>' for i, x in enumerate(chain, 1))
     meta = " · ".join(x for x in [p.get("report_nm") or "데모·업로드 자료", r.generated_at[:10],
-                                  "Claude 분석" if r.mode == "LLM" else "오프라인 분석", r.engagement] if x)
+                                  "공시·지식베이스 분석", r.engagement] if x)
     ui.block(f'<div class="ais-co"><div class="art">{icon}</div><div class="bd">'
              f'<div class="nm">{_h(r.company)}<span class="ind">{_h(r.snapshot.industry_name)}</span></div>'
              f'<div class="meta">{_h(meta)}</div><div class="sum">{_h(summ)}</div>'
