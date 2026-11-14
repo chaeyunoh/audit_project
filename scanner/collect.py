@@ -93,7 +93,7 @@ class DartCollector:
     def company_info(self, corp_code: str) -> dict:
         return self._json("company.json", corp_code=corp_code)
 
-    def latest_annual_report(self, corp_code: str) -> dict:
+    def annual_report_rows(self, corp_code: str) -> list[dict]:
         try:
             data = self._json("list.json", corp_code=corp_code, pblntf_detail_ty="A001",
                               bgn_de=(date.today() - timedelta(days=550)).strftime("%Y%m%d"),
@@ -103,7 +103,24 @@ class DartCollector:
                 raise CollectError("최근 1년 6개월 사이 제출된 사업보고서가 없습니다. "
                                    "비상장·상장폐지·신설 법인일 수 있으니 다른 후보를 고르세요.") from e
             raise
-        return pick_annual_report(data.get("list", []))
+        return data.get("list", [])
+
+    def latest_annual_report(self, corp_code: str) -> dict:
+        return pick_annual_report(self.annual_report_rows(corp_code))
+
+    def annual_report_with_text(self, corp_code: str) -> tuple[dict, str]:
+        """본문을 실제로 받을 수 있는 가장 최근 사업보고서와 그 원문.
+        정정 공시 중에는 원문 파일이 없는 경우가 있어(014) 다음 후보로 넘어간다.
+        (KB금융 2025: 최신 '[기재정정]'은 014, 3월 원본은 정상)"""
+        last = None
+        for rpt in annual_report_candidates(self.annual_report_rows(corp_code)):
+            try:
+                return rpt, self.document_text(rpt["rcept_no"])
+            except CollectError as e:
+                if "[014]" not in str(e):
+                    raise
+                last = e
+        raise CollectError("사업보고서 원문 파일을 받을 수 있는 공시가 없습니다.") from last
 
     def corp_code_for_stock(self, stock_code: str) -> str:
         """종목코드 → 고유번호 (corp_code를 저장하지 않았던 옛 분석 결과용)."""
@@ -199,8 +216,7 @@ class DartCollector:
         if not is_listed(info):
             raise CollectError(f"'{info.get('corp_name')}'은(는) 현재 상장사가 아닙니다(법인구분: {info.get('corp_cls') or '-'}). "
                                "분석 대상은 유가증권·코스닥·코넥스 상장사만입니다.")
-        rpt = self.latest_annual_report(corp["corp_code"])
-        full = self.document_text(rpt["rcept_no"])
+        rpt, full = self.annual_report_with_text(corp["corp_code"])
         url = f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rpt['rcept_no']}"
         overview = (f"회사명: {info.get('corp_name')}\n업종코드(KSIC): {info.get('induty_code')}\n"
                     f"설립일: {info.get('est_dt')}\n홈페이지: {info.get('hm_url')}")
@@ -276,11 +292,16 @@ def rank_corps(corps: list[dict], name: str, limit: int = 15, listed_only: bool 
 LISTED_CLS = {"Y": "유가증권시장", "K": "코스닥", "N": "코넥스"}  # DART 기업개황 corp_cls (E = 기타·비상장)
 
 
+def annual_report_candidates(rows: list[dict]) -> list[dict]:
+    """사업보고서 후보를 최신순으로. 첨부서류만 고친 공시('[첨부정정]'·'[첨부추가]')는 본문이 없어 뺀다."""
+    return [r for r in rows if "사업보고서" in r["report_nm"] and not r["report_nm"].lstrip().startswith("[첨부")]
+
+
 def pick_annual_report(rows: list[dict]) -> dict:
     """공시 목록에서 분석할 사업보고서 1건. 최신순으로 오되,
     '[첨부정정]'·'[첨부추가]'는 첨부서류만 고친 공시라 본문이 없으므로(원문 요청 시 014) 건너뛴다.
     '[기재정정]'은 본문 전체를 다시 낸 것이므로 그대로 쓴다. (현대제철 2025 사업보고서에서 발견)"""
-    reports = [r for r in rows if "사업보고서" in r["report_nm"] and not r["report_nm"].lstrip().startswith("[첨부")]
+    reports = annual_report_candidates(rows)
     if not reports:
         raise CollectError("최근 사업보고서를 찾을 수 없습니다.")
     return reports[0]

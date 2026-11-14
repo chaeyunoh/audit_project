@@ -113,3 +113,19 @@ def test_document_error_xml_becomes_readable_error(monkeypatch):
     monkeypatch.setattr(DartCollector, "_get", lambda self, *a, **k: R())
     with pytest.raises(CollectError, match=r"\[014\].*파일이 존재하지 않습니다"):
         DartCollector("k" * 40).document_text("1")
+
+
+# ---------- 정정 공시의 원문이 없으면 다음 후보로 (KB금융 2025) ----------
+def test_annual_report_with_text_falls_back_on_missing_file(monkeypatch):
+    from scanner.collect import CollectError, DartCollector
+    rows = [{"rcept_no": "new", "report_nm": "[기재정정]사업보고서 (2025.12)"},
+            {"rcept_no": "orig", "report_nm": "사업보고서 (2025.12)"}]
+    monkeypatch.setattr(DartCollector, "annual_report_rows", lambda self, cc: rows)
+
+    def doc(self, rcept_no):
+        if rcept_no == "new":
+            raise CollectError("DART 원문 파일을 받지 못했습니다 [014]: 파일이 존재하지 않습니다.")
+        return "본문"
+    monkeypatch.setattr(DartCollector, "document_text", doc)
+    rpt, text = DartCollector("k" * 40).annual_report_with_text("c")
+    assert rpt["rcept_no"] == "orig" and text == "본문"
